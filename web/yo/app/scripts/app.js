@@ -44,7 +44,7 @@ OncoKB.config = {
     oncoTreeLink: 'http://oncotree.mskcc.org/oncotree/api/',
     testing: true
 };
-
+OncoKB.backingUp = false;
 OncoKB.curateInfo = {
     Gene: {
         name: {
@@ -405,6 +405,9 @@ OncoKB.initialize = function() {
                         this[__key + '_eStatus'] = model.createMap();
                         this[__key + '_uuid'] = model.createString('');
                         this[__key + '_review'] = model.createMap();
+                        if(!OncoKB.backingUp) {
+                            this[__key + '_uuid'].setText(UUIDjs.create(4).toString());
+                        }
                     }
                     switch (OncoKB.curateInfo[id][__key].type) {
                     case 'string':
@@ -590,9 +593,9 @@ var oncokbApp = angular.module('oncokbApp', [
                     case: cause
                 });
                 // $rootScope.$emit('oncokbError', {message: 'Exception', reason: exception, case: cause});
-                if (config.testing) {
+                //if (config.testing) {
                     $delegate(exception, cause);
-                }
+                //}
             };
         });
 
