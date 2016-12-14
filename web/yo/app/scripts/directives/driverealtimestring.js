@@ -13,6 +13,7 @@ angular.module('oncokbApp')
             restrict: 'AE',
             scope: {
                 es: '=', // Evidence Status
+                rs: '=', //Review status and last reviewed content
                 object: '=', // target object
                 objecttype: '=', // drive document attribute type; Default: string
                 objectkey: '=', // if the attribute type is object, it has to have a key
@@ -66,8 +67,31 @@ angular.module('oncokbApp')
                         if (n !== o) {
                             if (scope.objecttype === 'object' && scope.objectkey) {
                                 scope.object.set(scope.objectkey, n);
+                                if(!_.isUndefined(scope.rs)){
+                                    var tempObj = {};
+                                    if(scope.rs.has('lastReviewed')){
+                                        tempObj = _.clone(scope.rs.get('lastReviewed'));
+                                    }
+                                    tempObj[scope.objectkey] = o;
+                                    scope.rs.set('lastReviewed', tempObj);
+                                    if(scope.rs.get('lastReviewed')[scope.objectkey] !== n){
+                                        scope.rs.set("review", true);
+                                    }else{
+                                        scope.rs.set("review", false);
+                                    }
+                                }
                             } else {
                                 scope.object.text = n;
+                                if(!_.isUndefined(scope.rs)){
+                                    if(!scope.rs.has('lastReviewed')){
+                                        scope.rs.set('lastReviewed', o);
+                                    }
+                                    if(scope.rs.get('lastReviewed') !== n){
+                                        scope.rs.set("review", true);
+                                    }else{
+                                        scope.rs.set("review", false);
+                                    }
+                                }
                             }
                             scope.valueChanged();
                         }

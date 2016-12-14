@@ -264,4 +264,6 @@ public interface EvidenceDao extends GenericDao<Evidence, Integer> {
     List<String> findAllCancerTypes();
     
     List<String> findAllSubtypes();
+    
+    List<Evidence> findEvidenceByUUID(String uuid);
 }

@@ -146,9 +146,11 @@ angular.module('oncokbApp')
             }
 
             $scope.backup = function() {
+                OncoKB.backingUp = true;
                 $scope.status.backup = false;
                 importer.backup(function() {
                     $scope.status.backup = true;
+                    OncoKB.backingUp = false;
                 });
             };
 
@@ -1947,6 +1949,327 @@ angular.module('oncokbApp')
                 console.log(gene);
             };
 
+            function parseMutationString(mutationStr){
+                mutationStr = mutationStr.replace(/\([^\)]+\)/g, '');
+                var parts = mutationStr.split(",");
+                var altResults = [], proteinChange = '', displayName = '';
+                for(var i = 0;i < parts.length;i++){
+                    if(parts[i].indexOf("[") !== -1){
+                        var l = parts[i].indexOf('[');
+                        var r = parts[i].indexOf(']');
+                        proteinChange = parts[i].substring(0, l);
+                        displayName = parts[i].substring(l+1, r);
+                    }else{
+                        proteinChange = parts[i];
+                        displayName = parts[i];
+                    }
+
+                    if(proteinChange.indexOf('/') !== -1){
+                        var tempRes = proteinChange.match(/([A-Z][0-9]+)(.*)/i);
+                        var refs = tempRes[2].split('/');
+                        for(var j = 0;j < refs.length;j++){
+                            altResults.push({
+                                "alteration": tempRes[1] + refs[j],
+                                "name": displayName,
+                                "gene": {
+                                    "hugoSymbol": $scope.gene.name.getText()
+                                }
+                            });
+                        }
+                    }else{
+                        altResults.push({
+                            "alteration": proteinChange,
+                            "name": displayName,
+                            "gene": {
+                                "hugoSymbol": $scope.gene.name.getText()
+                            }
+                        });
+                    }
+                }
+                return altResults;
+
+            }
+            $scope.reviewMode = false;
+            $scope.filterFn = function(reviewObj){
+                return !$scope.reviewMode || reviewObj.name_review.get('review');
+            }
+            $scope.review = function(){
+                if(!$scope.reviewMode){
+                    $scope.reviewMode = true;
+                    $scope.fileEditable = false;
+                    var mutationChanged = false, tumorChanged = false, treatmentChanged = false;
+                    _.each($scope.gene.mutations.asArray(), function(mutation){
+                        //need to put mutation.oncogenic_review.get('review')in the or expression to set mutationChanged
+                        if(mutation.shortSummary_review.get('review') || mutation.summary_review.get('review') || mutation.oncogenic_review.get('review')){
+                            mutation.oncogenic_review.set('review', true);
+                            mutationChanged = true;
+                        }
+                        if(mutation.short_review.get('review') || mutation.description_review.get('review') || mutation.effect_review.get('review')){
+                            mutation.effect_review.set('review', true);
+                            mutationChanged = true;
+                        }
+
+                        _.each(mutation.tumors.asArray(), function(tumor){
+                            if(tumor.shortPrevalence_review.get('review') || tumor.prevalence_review.get('review')){
+                                tumor.prevalence_review.set('review', true);
+                                tumorChanged = true;
+                            }
+                            if(tumor.shortProgImp_review.get('review') || tumor.progImp_review.get('review')){
+                                tumor.progImp_review.set('review', true);
+                                tumorChanged = true;
+                            }
+                            if(tumor.nccn.therapy_review.get('review') || tumor.nccn.disease_review.get('review') || tumor.nccn.version_review.get('review') || tumor.nccn.description_review.get('review') || tumor.nccn.short_review.get('review')){
+                                tumor.nccn_review.set('review', true);
+                                tumorChanged = true;
+                            }
+
+                            _.each(tumor.TI.asArray(), function(TI){
+                                _.each(TI.treatments.asArray(), function(treatment){
+                                    if(treatment.level_review.get('review') || treatment.indication_review.get('review') || treatment.description_review.get('review') || treatment.short_review.get('review')){
+                                        treatment.name_review.set('review', true);
+                                        treatmentChanged = true;
+                                    }
+                                });
+                                if(TI.description_review.get('review') || treatmentChanged){
+                                    TI.name_review.set('review', true);
+                                    tumorChanged = true;
+                                }
+                                treatmentChanged = false;
+                            });
+
+                            if(tumorChanged || tumor.summary_review.get('review')){
+                                tumor.name_review.set('review', true);
+                                mutationChanged = true;
+                            }
+                            tumorChanged = false;
+                        });
+                        if(mutationChanged){
+                            mutation.name_review.set('review', true);
+                        }
+                        mutationChanged = false;
+                    })
+                }else{
+                    $scope.reviewMode = false;
+                    $scope.fileEditable = $scope.document.editable ? true : false;
+                }
+
+            };
+
+            $scope.saveToDB = function(event, type, mutation, tumor, TI, treatment){
+                if(event !== null){
+                    $scope.stopCollopse(event);
+                }
+                var dataUUID = '', extraDataUUID = '';
+                var data =   {
+                    "additionalInfo": null,
+                    "alterations": null,
+                    "cancerType": null,
+                    "description": null,
+                    "evidenceType": type,
+                    "gene": {
+                        "hugoSymbol": $scope.gene.name.getText()
+                    },
+                    "knownEffect": null,
+                    "lastEdit": new Date().getTime().toString(),
+                    "levelOfEvidence": null,
+                    "subtype": null
+                };
+                var extraData = _.clone(data);
+                switch(type){
+                case 'GENE_SUMMARY':
+                    dataUUID = $scope.gene.summary_uuid.getText();
+                    data.description = $scope.gene.summary.getText();
+                    break;
+                case 'GENE_BACKGROUND':
+                    dataUUID = $scope.gene.background_uuid.getText();
+                    data.description = $scope.gene.background.getText();
+                    break;
+                case 'Clinical effect':
+                    dataUUID = mutation.oncogenic_uuid.getText();
+                    data.knownEffect = mutation.oncogenic.getText();
+                    data.description = mutation.summary.getText();
+                    data.evidenceType = "ONCOGENIC";
+                    if(mutation.shortSummary_review.get('review')){
+                        extraDataUUID = mutation.shortSummary_uuid.getText();
+                        extraData.description = mutation.shortSummary.getText();
+                        extraData.evidenceType = "MUTATION_SUMMARY";
+                        extraData.alterations = parseMutationString(mutation.name.getText());
+                    }
+                    break;
+                case 'MUTATION_EFFECT':
+                    dataUUID = mutation.effect_uuid.getText();
+                    data.knownEffect = mutation.effect.value.getText();
+                    data.description = mutation.description.getText();
+                    data.additionalInfo = mutation.short.getText();
+                    break;
+                case 'TUMOR_TYPE_SUMMARY':
+                    dataUUID = tumor.summary_uuid.getText();
+                    data.description = tumor.summary.getText();
+                    break;
+                case 'PREVALENCE':
+                    dataUUID = tumor.prevalence_uuid.getText();
+                    data.description = tumor.prevalence.getText();
+                    data.additionalInfo = tumor.shortPrevalence.getText();
+                    break;
+                case 'PROGNOSTIC_IMPLICATION':
+                    dataUUID = tumor.progImp_uuid.getText();
+                    data.description = tumor.progImp.getText();
+                    data.additionalInfo = tumor.shortProgImp.getText();
+                    break;
+                case 'NCCN_GUIDELINES':
+                    dataUUID = tumor.nccn_uuid.getText();
+                    data.description = tumor.nccn.description.getText();
+                    data.additionalInfo = tumor.nccn.short.getText();
+                    break;
+                case 'Standard implications for sensitivity to therapy':
+                    data.evidenceType = "STANDARD_THERAPEUTIC_IMPLICATIONS_FOR_DRUG_SENSITIVITY";
+                    data.knownEffect = 'Sensitive';
+                    break;
+                case 'Standard implications for resistance to therapy':
+                    data.evidenceType = "STANDARD_THERAPEUTIC_IMPLICATIONS_FOR_DRUG_RESISTANCE";
+                    data.knownEffect = 'Resistant';
+                    break;
+                case 'Investigational implications for sensitivity to therapy':
+                    data.evidenceType = "INVESTIGATIONAL_THERAPEUTIC_IMPLICATIONS_DRUG_SENSITIVITY";
+                    data.knownEffect = 'Sensitive';
+                    break;
+                case 'Investigational implications for resistance to therapy':
+                    data.evidenceType = "INVESTIGATIONAL_THERAPEUTIC_IMPLICATIONS_DRUG_RESISTANCE";
+                    data.knownEffect = 'Resistant';
+                    break;
+                case 'CLINICAL_TRIAL':
+                    dataUUID = tumor.trials_uuid.getText();
+                    break;
+                default:
+                    break;
+                }
+                if(mutation !== null){
+                    data.alterations = parseMutationString(mutation.name.getText());
+                }
+                if(tumor !== null){
+                    data.subtype = tumor.cancerTypes.asArray()[0].oncoTreeCode.getText();
+                    data.cancerType = tumor.cancerTypes.asArray()[0].cancerType.getText();
+                }
+                if(TI !== null){
+                    dataUUID = TI.name_uuid.getText();
+                    data.description = TI.description.getText();
+                }
+                if(treatment !== null){
+                    data.levelOfEvidence = treatment.level.getText();
+                    data.description = treatment.description.getText();
+                    data.additionalInfo = treatment.short.getText();
+                }
+
+                if(type === 'Gene type'){
+                    var params = {
+                        "hugoSymbol": $scope.gene.name.getText(),
+                        "oncogene": $scope.gene.type.get('OCG').trim().length > 0 ? true : false,
+                        "tsg": $scope.gene.type.get('TSG').trim().length > 0 ? true : false
+                    };
+                    DatabaseConnector.updateGeneType($scope.gene.name.getText(), params, function (result) {
+                        geneModelUpdate(type, mutation, tumor, TI, treatment);
+                    }, function (error) {
+                        console.log('fail to update to database', error);
+                    });
+
+                }else if(dataUUID.length > 0){
+                    DatabaseConnector.updateEvidence(dataUUID, data, function (result) {
+                        if(extraDataUUID.length > 0){
+                            DatabaseConnector.updateEvidence(extraDataUUID, extraData, function (result) {
+                                geneModelUpdate(type, mutation, tumor, TI, treatment);
+                            }, function (error) {
+                                console.log('fail to update to database', error);
+                            });
+                        }else{
+                            geneModelUpdate(type, mutation, tumor, TI, treatment);
+                        }
+                    }, function (error) {
+                        console.log('fail to update to database', error);
+                    });
+                }
+
+            }
+            function geneModelUpdate(type, mutation, tumor, TI, treatment){
+                switch(type){
+                case 'GENE_SUMMARY':
+                    $scope.gene.summary_review.set('lastReviewed', $scope.gene.summary.getText());
+                    $scope.gene.summary_review.set('review', false);
+                    break;
+                case 'GENE_BACKGROUND':
+                    $scope.gene.background_review.set('lastReviewed', $scope.gene.background.getText());
+                    $scope.gene.background_review.set('review', false);
+                    break;
+                case 'Gene type':
+                    $scope.gene.type_review.set('lastReviewed', {TSG: $scope.gene.type.get('TSG'), OCG: $scope.gene.type.get('OCG')});
+                    $scope.gene.type_review.set('review', false);
+                    break;
+                case 'Clinical effect':
+                    mutation.oncogenic_review.set('lastReviewed', mutation.oncogenic.getText());
+                    mutation.oncogenic_review.set('review', false);
+                    mutation.summary_review.set('lastReviewed', mutation.summary.getText());
+                    mutation.summary_review.set('review', false);
+                    mutation.shortSummary_review.set('lastReviewed', mutation.shortSummarty.getText());
+                    mutation.shortSummary_review.set('review', false);
+                    break;
+                case 'MUTATION_EFFECT':
+                    mutation.effect_review.set('lastReviewed', mutation.effect.value.getText());
+                    mutation.effect_review.set('review', false);
+                    mutation.summary_review.set('lastReviewed', mutation.summary.getText());
+                    mutation.summary_review.set('review', false);
+                    mutation.shortSummary_review.set('lastReviewed', mutation.shortSummary.getText());
+                    mutation.shortSummary_review.set('review', false);
+                    break;
+                case 'TUMOR_TYPE_SUMMARY':
+                    tumor.summary_review.set('lastReviewed', tumor.summary.getText());
+                    tumor.summary_review.set('review', false);
+                    break;
+                case 'PREVALENCE':
+                    tumor.prevalence_review.set('lastReviewed', tumor.prevalence.getText());
+                    tumor.prevalence_review.set('review', false);
+                    tumor.shortPrevalence_review.set('lastReviewed', tumor.shortPrevalence.getText());
+                    tumor.shortPrevalence_review.set('review', false);
+                    break;
+                case 'PROGNOSTIC_IMPLICATION':
+                    tumor.progImp_review.set('lastReviewed', tumor.progImp.getText());
+                    tumor.progImp_review.set('review', false);
+                    tumor.shortProgImp_review.set('lastReviewed', tumor.shortProgImp.getText());
+                    tumor.shortProgImp_review.set('review', false);
+                    break;
+                case 'NCCN_GUIDELINES':
+                    tumor.nccn_review.set('review', false);
+
+                    tumor.nccn.therapy_review.set('lastReviewed', tumor.nccn.therapy.getText());
+                    tumor.nccn.therapy_review.set('review', false);
+                    tumor.nccn.disease_review.set('lastReviewed', tumor.nccn.disease.getText());
+                    tumor.nccn.disease_review.set('review', false);
+                    tumor.nccn.version_review.set('lastReviewed', tumor.nccn.version.getText());
+                    tumor.nccn.version_review.set('review', false);
+                    tumor.nccn.description_review.set('lastReviewed', tumor.nccn.description.getText());
+                    tumor.nccn.description_review.set('review', false);
+                    tumor.nccn.short_review.set('lastReviewed', tumor.nccn.short.getText());
+                    tumor.nccn.short_review.set('review', false);
+                    break;
+                case 'STANDARD_THERAPEUTIC_IMPLICATIONS_FOR_DRUG_SENSITIVITY':
+                case 'STANDARD_THERAPEUTIC_IMPLICATIONS_FOR_DRUG_RESISTANCE':
+                case 'INVESTIGATIONAL_THERAPEUTIC_IMPLICATIONS_DRUG_SENSITIVITY':
+                case 'INVESTIGATIONAL_THERAPEUTIC_IMPLICATIONS_DRUG_RESISTANCE':
+                    treatment.level_review.set('lastReviewed', treatment.level.getText());
+                    treatment.level_review.set('review', false);
+                    treatment.indication_review.set('lastReviewed', treatment.indication.getText());
+                    treatment.indication_review.set('review', false);
+                    treatment.description_review.set('lastReviewed', treatment.description.getText());
+                    treatment.description_review.set('review', false);
+                    treatment.short_review.set('lastReviewed', treatment.short.getText());
+                    treatment.short_review.set('review', false);
+                    break;
+                case 'CLINICAL_TRIAL':
+                    tumor.trials_review.set('review', false);
+                    break;
+                default:
+                    break;
+                }
+            }
+
             $scope.updateGene = function() {
                 $scope.docStatus.savedGene = false;
 
@@ -2134,11 +2457,12 @@ angular.module('oncokbApp')
             };
 
             // Add new therapeutic implication
-            $scope.addTrial = function(trials, newTrial) {
+            $scope.addTrial = function(trials, newTrial, trials_review) {
                 if (trials && newTrial) {
                     if (trials.indexOf(newTrial) === -1) {
                         if (newTrial.match(/NCT[0-9]+/ig)) {
                             trials.push(newTrial);
+                            trials_review.set('review', true);
                         } else {
                             dialogs.notify('Warning', 'Please check your trial ID format. (e.g. NCT01562899)');
                         }

@@ -275,4 +275,9 @@ public class EvidenceDaoImpl
     public List<String> findAllSubtypes() {
         return getHibernateTemplate().findByNamedQuery("findAllSubtypes");
     }
+    
+    @Override
+    public List<Evidence> findEvidenceByUUID(String uuid) {
+        return getHibernateTemplate().findByNamedQuery("findEvidenceByUUID", uuid);
+    }
 }

@@ -120,4 +120,6 @@ public interface EvidenceBo extends GenericBo<Evidence> {
     List<String> findAllCancerTypes();
     
     List<String> findAllSubtypes();
+    
+    List<Evidence> findEvidenceByUUID(String uuid);
 }

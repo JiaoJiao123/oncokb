@@ -189,8 +189,32 @@ angular.module('oncokbApp').factory('DriveAnnotation', ['$http', 'OncoKB', funct
             });
     }
 
+    function updateGeneType(hugoSymbol, data){
+        return $http.post(
+            OncoKB.config.curationLink + 'genes/update/' + hugoSymbol,
+            data,
+            {
+                transformResponse: function(result){
+                    return {status: result};
+                }
+            });
+    }
+
+    function updateEvidence(uuid, data){
+        return $http.post(
+            OncoKB.config.curationLink + 'evidences/update/' + uuid,
+            data,
+            {
+                transformResponse: function(result){
+                    return {status: result};
+                }
+            });
+    }
+
     return {
-        updateGene: updateGene
+        updateGene: updateGene,
+        updateGeneType: updateGeneType,
+        updateEvidence: updateEvidence
     };
 }]);
 

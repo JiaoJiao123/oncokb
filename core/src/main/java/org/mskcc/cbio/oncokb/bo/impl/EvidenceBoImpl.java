@@ -230,4 +230,9 @@ public class EvidenceBoImpl extends GenericBoImpl<Evidence, EvidenceDao> impleme
     public List<String> findAllSubtypes() {
         return getDao().findAllSubtypes();
     }
+    
+    @Override
+    public List<Evidence> findEvidenceByUUID(String uuid){
+        return getDao().findEvidenceByUUID(uuid);
+    }
 }

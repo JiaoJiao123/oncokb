@@ -278,6 +278,28 @@ angular.module('oncokbApp')
                 }
             }
 
+            function updateGeneType(hugoSymbol, data, success, fail) {
+                DriveAnnotation
+                    .updateGeneType(hugoSymbol, data)
+                    .success(function(data) {
+                        success(data);
+                    })
+                    .error(function() {
+                        fail();
+                    });
+            }
+
+            function updateEvidence(uuid, data, success, fail) {
+                DriveAnnotation
+                    .updateEvidence(uuid, data)
+                    .success(function(data) {
+                        success(data);
+                    })
+                    .error(function() {
+                        fail();
+                    });
+            }
+
             function createGoogleFolder(params) {
                 var deferred = $q.defer();
 
@@ -573,6 +595,8 @@ angular.module('oncokbApp')
                 getOncokbInfo: getOncokbInfo,
                 getAllTumorType: getAllTumorType,
                 updateGene: updateGene,
+                updateGeneType: updateGeneType,
+                updateEvidence: updateEvidence,
                 sendEmail: sendEmail,
                 getHotspotList: getHotspotList,
                 getAutoMutationList: getAutoMutationList,
