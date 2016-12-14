@@ -6,7 +6,7 @@ angular.module('oncokbApp')
             var self = {};
             self.id = null;
             self.document = null;
-
+            self.metaDoc = null;
             /**
              * Close the current document.
              */
@@ -197,6 +197,23 @@ angular.module('oncokbApp')
                 return self.load(id);
             };
 
+            self.getMetaRealtimeDocument = function(id) {
+                var deferred = $q.defer();
+                var initialize = function() {
+                };
+                var onLoad = function(document) {
+                    self.metaDoc = document;
+                    deferred.resolve(document);
+                    $rootScope.$digest();
+                };
+                var onError = function(error) {
+                    console.log('error', error);
+                };
+                gapi.drive.realtime.load(id, onLoad, initialize, onError);
+                return deferred.promise;
+
+            };
+
             /**
              * Retrieve a list of File resources.
              * @return {d.promise|promise|*|h.promise|f} Promise
@@ -225,6 +242,36 @@ angular.module('oncokbApp')
                 gapi.client.load('drive', 'v2', function() {
                     var initialRequest = gapi.client.drive.files.list({
                         q: '"' + config.folderId + '" in parents'
+                    });
+                    retrievePageOfFiles(initialRequest, []);
+                });
+                return deferred.promise;
+            };
+
+            self.retrieveMeta = function() {
+                var deferred = $q.defer();
+
+                var retrievePageOfFiles = function(request, result) {
+                    request.execute(function(resp) {
+                        result = result.concat(resp.items);
+                        var nextPageToken = resp.nextPageToken;
+                        if (nextPageToken) {
+                            request = gapi.client.drive.files.list({
+                                q: '"0By19QWSOYlS_c1hrWE5zcXYzZWs" in parents',
+                                pageToken: nextPageToken,
+                                maxResults: 300
+                            });
+                            retrievePageOfFiles(request, result);
+                        } else {
+                            // console.log('get all files', result);
+                            deferred.resolve(result);
+                        }
+                    });
+                };
+
+                gapi.client.load('drive', 'v2', function() {
+                    var initialRequest = gapi.client.drive.files.list({
+                        q: '"0By19QWSOYlS_c1hrWE5zcXYzZWs" in parents'
                     });
                     retrievePageOfFiles(initialRequest, []);
                 });
@@ -428,6 +475,26 @@ angular.module('oncokbApp')
                     $rootScope.$digest();
                 };
                 gapi.drive.realtime.load(id, onLoad, initialize, onError);
+                return deferred.promise;
+            };
+
+            self.loadMeta = function(id) {
+                var deferred = $q.defer();
+                var initialize = function() {
+                };
+                var onLoad = function(document) {
+                    self.metaDoc = document;
+                    deferred.resolve(document);
+                    $rootScope.$digest();
+                };
+                var onError = function(error) {
+                    console.log('error', error);
+                };
+                gapi.drive.realtime.load(id, onLoad, initialize, onError);
+                document.getModel().getRoot().addEventListener(
+                    gapi.drive.realtime.EventType.OBJECT_CHANGED,
+                    self.loadMeta(id));
+
                 return deferred.promise;
             };
 

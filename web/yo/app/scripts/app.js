@@ -30,21 +30,22 @@ OncoKB.config = {
         'https://www.googleapis.com/auth/plus.profile.emails.read',
         'https://www.googleapis.com/auth/drive.file'
     ],
-    folderId: '0BzBfo69g8fP6NkgtWGZxd0NjcWs', // Example folder
+    folderId: '', // Example folder
+    metaFolderId: '0By19QWSOYlS_c1hrWE5zcXYzZWs',//Meta Folder
     userRoles: {
         public: 1,
         user: 2,
         curator: 4,
         admin: 8
     },
-    backupFolderId: '0BzBfo69g8fP6LWozVE56Mk1RYkU',  // Example backup folder
+    backupFolderId: '',  // Example backup folder
     users: '', // The google spreadsheet ID which used to manage the user info. Please share this file to the service email address with view permission.
     apiLink: 'legacy-api/',
     curationLink: 'legacy-api/',
     oncoTreeLink: 'http://oncotree.mskcc.org/oncotree/api/',
-    testing: true
+    testing: false
 };
-
+OncoKB.backingUp = false;
 OncoKB.curateInfo = {
     Gene: {
         name: {
@@ -404,6 +405,12 @@ OncoKB.initialize = function() {
                         this[__key + '_timeStamp'] = model.createMap();
                         this[__key + '_eStatus'] = model.createMap();
                         this[__key + '_uuid'] = model.createString('');
+                        this[__key + '_review'] = model.createMap();
+                        //after first time imported uuid, remove this statement
+                        //this[__key + '_uuid'].setText(UUIDjs.create(4).toString());
+                        if(!OncoKB.backingUp){
+                               this[__key + '_uuid'].setText(UUIDjs.create(4).toString());
+                        }
                     }
                     switch (OncoKB.curateInfo[id][__key].type) {
                     case 'string':
@@ -432,6 +439,7 @@ OncoKB.initialize = function() {
                 OncoKB[_key].prototype[_keys[j] + '_timeStamp'] = gapi.drive.realtime.custom.collaborativeField(_key + '_' + _keys[j] + '_timeStamp');
                 OncoKB[_key].prototype[_keys[j] + '_eStatus'] = gapi.drive.realtime.custom.collaborativeField(_key + '_' + _keys[j] + '_eStatus');
                 OncoKB[_key].prototype[_keys[j] + '_uuid'] = gapi.drive.realtime.custom.collaborativeField(_key + '_' + _keys[j] + '_uuid');
+                OncoKB[_key].prototype[_keys[j] + '_review'] = gapi.drive.realtime.custom.collaborativeField(_key + '_' + _keys[j] + '_review');
             }
         }
 

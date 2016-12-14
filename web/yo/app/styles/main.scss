@@ -153,6 +153,9 @@ p.editableBox {
 p.editableBox.doubleH {
   min-height: 40px;
 }
+p.unEditableBox.review {
+    background-color: #E2F1EF;
+}
 .curateTrialItem, .vusItem {
   float: left;
   height: 30px;
@@ -335,6 +338,10 @@ p.editableBox.doubleH {
   background-color: #E4EAF2;
   border-left: 5px solid #396BB6;
 }
+.deletedHeader .panel-heading{
+    background-color: red;
+    border-left: 5px solid #396BB6;
+}
 .geneLinks td:nth-child(1){
   font-size:15px;
   font-weight: bold;
@@ -380,6 +387,9 @@ i.fa-angle-up, i.fa-angle-double-down, i.fa-angle-double-up{
 }
 .fa-comments-green {
   color: #70b500;
+}
+.reviewed {
+    color: #82E452;
 }
 rect {
   fill: none;

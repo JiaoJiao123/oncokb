@@ -1,8 +1,8 @@
 <div>
     <div ng-if="t === 'p'">
-        <p class="doubleH"
+        <p class="doubleH" ng-if="!rs.get('action')"
            ng-class="{editableBox:fe, unEditableBox:!fe}"
-           contenteditable="{{fe}}"
+           contenteditable="{{rs.get('reviewMode') ? true : fe}}"
            placeholder="{{ph}}"
            ng-model="content.stringO">
         </p>
@@ -11,6 +11,11 @@
                 ng-if="io">
 
         </pub-iframe>
+
+        <p ng-if="rs.get('reviewMode')" class="unEditableBox review"
+           contenteditable="false"
+           placeholder="{{ph}}">{{rs.get('lastReviewed')}}
+        </p>
     </div>
     <div ng-if="t === 'input'">
         <input type='text' ng-class="{editableBox:fe, unEditableBox:!fe}" contenteditable="{{fe}}" placeholder="{{ph}}" ng-model="content.stringO"/>
@@ -44,6 +49,10 @@
                   >
           <label for="{{checkboxid}}-{{$index}}">{{checkbox}}</label>
         </span>
+        <p ng-if="rs.get('reviewMode')" class="unEditableBox review"
+           contenteditable="false"
+           placeholder="{{ph}}">{{rs.get('lastReviewed')}}
+        </p>
     </div>
     <div ng-if="t === 's-checkbox'">
         <span  ng-repeat="checkbox in checkboxes">

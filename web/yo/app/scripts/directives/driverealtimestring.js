@@ -7,12 +7,15 @@
  * # driveRealtimeString
  */
 angular.module('oncokbApp')
-    .directive('driveRealtimeString', function(gapi, $timeout, _) {
+    .directive('driveRealtimeString', function(gapi, $timeout, _, storage, $rootScope) {
         return {
             templateUrl: 'views/driveRealtimeString.html',
             restrict: 'AE',
             scope: {
                 es: '=', // Evidence Status
+                rs: '=', //Review status and last reviewed content
+                uuid: '=',//evidence uuid
+                rm: '=',//review mode
                 object: '=', // target object
                 objecttype: '=', // drive document attribute type; Default: string
                 objectkey: '=', // if the attribute type is object, it has to have a key
@@ -60,15 +63,69 @@ angular.module('oncokbApp')
                         scope.content.stringO = scope.object.text;
                     }
                 });
+                if(scope.rs && !scope.rs.get('lastReviewed')){
+                    scope.rs.set('lastReviewed', scope.content.stringO);
+                }
                 scope.$watch('content.stringO', function(n, o) {
                     $timeout.cancel(scope.stringTimeoutPromise);  // does nothing, if timeout already done
                     scope.stringTimeoutPromise = $timeout(function() {   // Set timeout
                         if (n !== o) {
-                            if (scope.objecttype === 'object' && scope.objectkey) {
-                                scope.object.set(scope.objectkey, n);
-                            } else {
-                                scope.object.text = n;
-                            }
+                            storage.retrieveMeta().then(function(result){
+                                storage.getMetaRealtimeDocument(result[0].id).then(function (metaRealtime) {
+                                    if(metaRealtime && metaRealtime.error) {
+                                        console.log('did not get meta document.');
+                                    } else {
+                                        var hugoSymbol = $rootScope.currentGene;
+                                        var uuid = scope.uuid;
+                                        var reviewMeta = metaRealtime.getModel().getRoot().get('review').get(hugoSymbol);
+                                        var tempMapping = reviewMeta.get(uuid);
+                                        if(!tempMapping){
+                                            tempMapping = metaRealtime.getModel().createMap();
+                                        }
+                                        scope.rs.set('rollback', null);
+                                        if (scope.objecttype === 'object' && scope.objectkey) {
+                                            scope.object.set(scope.objectkey, n);
+                                            if(!_.isUndefined(scope.rs)){
+                                                var tempObj = {};
+                                                if(scope.rs.has('lastReviewed')){
+                                                    tempObj = _.clone(scope.rs.get('lastReviewed'));
+                                                }
+                                                tempObj[scope.objectkey] = o;
+                                                scope.rs.set('lastReviewed', tempObj);
+                                                if(scope.rs.get('lastReviewed')[scope.objectkey] !== n){
+                                                    tempMapping.set('review', true);
+                                                    tempMapping.set('lastReviewedTime', new Date().getTime().toString());
+                                                }else{
+                                                    tempMapping.set('review', false);
+                                                    tempMapping.set('lastReviewedTime', new Date().getTime().toString());
+                                                }
+                                            }
+                                        } else {
+                                            scope.object.text = n;
+                                            //for the case of reject action changing real time doc
+                                            if(scope.rs && scope.rs.get('action') !== 'rejected'){
+                                                if(!scope.rs.get('lastReviewed')){
+                                                    scope.rs.set('lastReviewed', o);
+                                                }
+                                                if(scope.rs.get('lastReviewed') !== n){
+                                                    tempMapping.set('review', true);
+                                                    tempMapping.set('lastReviewedTime', new Date().getTime().toString());
+                                                    scope.rs.set('review', true);
+                                                }else{
+                                                    tempMapping.set('review', false);
+                                                    tempMapping.set('lastReviewedTime', new Date().getTime().toString());
+                                                    scope.rs.set('review', false);
+                                                    //if(scope.rs.get('reviewMode')){
+                                                    if(scope.rm){
+                                                       scope.rs.set('rollback', true);
+                                                    }
+                                                }
+                                            }
+                                        }
+                                        reviewMeta.set(uuid, tempMapping);
+                                    }
+                                });
+                            });
                             scope.valueChanged();
                         }
                     }, 1000);

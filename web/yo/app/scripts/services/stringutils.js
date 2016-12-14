@@ -902,6 +902,7 @@ angular.module('oncokbApp')
                         _mutation = combineData(_mutation, e, ['description', 'short'], excludeObsolete);
                         _mutation.effect = combineData(_mutation.effect, e.effect, ['value', 'addOn'], false, excludeComments);
                         _mutation.effect_uuid = e.effect_uuid.getText();
+                        _mutation.effect_review = getReview(e.effect_review);
                         // if(_mutation.effect && _mutation.effect.value) {
                         //     var effect = _mutation.effect.value;
                         //
@@ -964,7 +965,7 @@ angular.module('oncokbApp')
                                 __tumor.nccn = combineData(__tumor.nccn, e1.nccn, ['therapy', 'disease', 'version', 'pages', 'category', 'description', 'short'], excludeObsolete, excludeComments);
                                 __tumor.nccn_uuid = e1.nccn_uuid.getText();
                             }
-                            
+
                             if (!(excludeObsolete && e1.trials_eStatus && e1.trials_eStatus.has('obsolete') && e1.trials_eStatus.get('obsolete') === 'true')) {
                                 e1.trials.asArray().forEach(function(trial) {
                                     __tumor.trials.push(trial);
@@ -1042,6 +1043,9 @@ angular.module('oncokbApp')
                         if (model[e + '_uuid']) {
                             object[e + '_uuid'] = model[e + '_uuid'].getText();
                         }
+                        if (model[e + '_review']) {
+                            object[e + '_review'] = getReview(model[e + '_review']);
+                        }
                     }
                 }
             });
@@ -1099,6 +1103,14 @@ angular.module('oncokbApp')
                 };
             });
             return status;
+        }
+
+        function getReview(model){
+            var reviewRecord = {
+                lastReviewed: model.get('lastReviewed'),
+                review: model.get('review')
+            };
+            return reviewRecord;
         }
 
         function isUndefinedOrEmpty(str) {
