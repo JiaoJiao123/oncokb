@@ -39,7 +39,7 @@ public class GeneController {
         } else if (hugoSymbols!=null) {
             genes.addAll(geneBo.findGenesByHugoSymbol(hugoSymbols));
         }
-        
+        //test
         return genes;
     }
 }
