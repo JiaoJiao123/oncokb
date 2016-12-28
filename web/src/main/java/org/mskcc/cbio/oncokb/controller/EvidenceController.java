@@ -5,7 +5,12 @@
 package org.mskcc.cbio.oncokb.controller;
 
 import io.swagger.annotations.ApiParam;
+import org.mskcc.cbio.oncokb.bo.AlterationBo;
+import org.mskcc.cbio.oncokb.bo.EvidenceBo;
+import org.mskcc.cbio.oncokb.bo.GeneBo;
 import org.mskcc.cbio.oncokb.model.*;
+import org.mskcc.cbio.oncokb.util.AlterationUtils;
+import org.mskcc.cbio.oncokb.util.ApplicationContextSingleton;
 import org.mskcc.cbio.oncokb.util.EvidenceUtils;
 import org.mskcc.cbio.oncokb.util.MainUtils;
 import org.springframework.http.HttpMethod;
@@ -13,16 +18,6 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import org.json.JSONObject;
-import org.mskcc.cbio.oncokb.bo.AlterationBo;
-import org.mskcc.cbio.oncokb.bo.EvidenceBo;
-import org.mskcc.cbio.oncokb.bo.GeneBo;
-import org.mskcc.cbio.oncokb.util.AlterationUtils;
-import org.mskcc.cbio.oncokb.util.ApplicationContextSingleton;
-import org.mskcc.cbio.oncokb.util.CacheUtils;
-import org.mskcc.cbio.oncokb.util.GeneUtils;
 
 /**
  * @author jgao
@@ -96,12 +91,12 @@ public class EvidenceController {
 
         return result;
     }
-    
+
     @RequestMapping(value="/legacy-api/evidences/update/{uuid}", method = RequestMethod.POST)
     public @ResponseBody String updateEvidence(@ApiParam(value = "uuid", required = true) @PathVariable("uuid") String uuid,
             @RequestBody(required = true) Evidence queryEvidence) {
         EvidenceBo evidenceBo = ApplicationContextSingleton.getEvidenceBo();
-        
+
         EvidenceType evidenceType = queryEvidence.getEvidenceType();
         String subType = queryEvidence.getSubtype();
         String cancerType = queryEvidence.getCancerType();
@@ -110,14 +105,14 @@ public class EvidenceController {
         String description = queryEvidence.getDescription();
         String additionalInfo = queryEvidence.getAdditionalInfo();
         Date lastEdit = queryEvidence.getLastEdit();
-                        
+
         //List<Evidence> evidences = EvidenceUtils.getEvidenceByUUID(uuid);
-        List<Evidence> evidences = evidenceBo.findEvidenceByUUID(uuid);
+        List<Evidence> evidences = evidenceBo.findEvidenceByUUIDs(Collections.singletonList(uuid));
         if(evidences.isEmpty()){
             Evidence evidence = new Evidence();
             GeneBo geneBo = ApplicationContextSingleton.getGeneBo();
             Gene gene = geneBo.findGeneByHugoSymbol(queryEvidence.getGene().getHugoSymbol());
-            
+
             AlterationType type = AlterationType.MUTATION;
             Set<Alteration> queryAlterations = queryEvidence.getAlterations();
             Set<Alteration> alterations = new HashSet<Alteration>();
@@ -135,7 +130,7 @@ public class EvidenceController {
                     AlterationUtils.annotateAlteration(alteration, proteinChange);
                     alterationBo.save(alteration);
                 }
-                alterations.add(alteration); 
+                alterations.add(alteration);
             }
             evidence.setAlterations(alterations);
             evidence.setUuid(uuid);
@@ -165,11 +160,32 @@ public class EvidenceController {
                 evidenceBo.update(evidence);
             }
         }
-        
+
         //CacheUtils.setEvidenceByUUID(evidences);
         return "success";
     }
-    
+
+    @RequestMapping(value = "/legacy-api/evidences/delete", method = RequestMethod.POST)
+    public
+    @ResponseBody
+    String deleteEvidences(@RequestBody(required = true) List<String> uuids) {
+        EvidenceBo evidenceBo = ApplicationContextSingleton.getEvidenceBo();
+        if (uuids != null) {
+            List<Evidence> evidences = evidenceBo.findEvidenceByUUIDs(uuids);
+            evidenceBo.deleteAll(evidences);
+        }
+        return "";
+    }
+
+    @RequestMapping(value = "/legacy-api/evidences/delete/{uuid}", method = RequestMethod.DELETE)
+    public
+    @ResponseBody
+    String deleteEvidence(@ApiParam(value = "uuid", required = true) @PathVariable("uuid") String uuid) {
+        EvidenceBo evidenceBo = ApplicationContextSingleton.getEvidenceBo();
+        List<Evidence> evidences = evidenceBo.findEvidenceByUUIDs(Collections.singletonList(uuid));
+        evidenceBo.deleteAll(evidences);
+        return "";
+    }
 
 
 }

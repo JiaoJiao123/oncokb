@@ -143,7 +143,7 @@ public class EvidenceBoImpl extends GenericBoImpl<Evidence, EvidenceDao> impleme
             List<String> tts = cancerTypes;
             set.addAll(getDao().findEvidencesByAlterationsAndCancerTypesAndEvidenceTypesAndLevelOfEvidence(alts, tts, ets, les));
         }
-        
+
         return new ArrayList<Evidence>(set);
     }
 
@@ -230,9 +230,9 @@ public class EvidenceBoImpl extends GenericBoImpl<Evidence, EvidenceDao> impleme
     public List<String> findAllSubtypes() {
         return getDao().findAllSubtypes();
     }
-    
+
     @Override
-    public List<Evidence> findEvidenceByUUID(String uuid){
-        return getDao().findEvidenceByUUID(uuid);
+    public List<Evidence> findEvidenceByUUIDs(List<String> uuids){
+        return getDao().findEvidenceByUUIDs(uuids);
     }
 }

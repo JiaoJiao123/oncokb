@@ -14,7 +14,7 @@ import org.json.JSONObject;
  */
 public class EvidenceUtils {
     private static EvidenceBo evidenceBo = ApplicationContextSingleton.getEvidenceBo();
-    
+
     /**
      * Remove evidences if its alteration in the alteration list
      *
@@ -302,17 +302,17 @@ public class EvidenceUtils {
         }
         return evidences;
     }
-    
+
     public static List<Evidence> getEvidenceByUUID(String uuid) {
         if (uuid != null) {
             EvidenceBo evidenceBo = ApplicationContextSingleton.getEvidenceBo();
             if (CacheUtils.isEnabled()) {
                 if (CacheUtils.getEvidenceByUUID(uuid) == null) {
-                    CacheUtils.setEvidenceByUUID(evidenceBo.findEvidenceByUUID(uuid));
+                    CacheUtils.setEvidenceByUUID(evidenceBo.findEvidenceByUUIDs(Collections.singletonList(uuid)));
                 }
                 return CacheUtils.getEvidenceByUUID(uuid);
             } else {
-                return evidenceBo.findEvidenceByUUID(uuid);
+                return evidenceBo.findEvidenceByUUIDs(Collections.singletonList(uuid));
             }
         }
         return null;
@@ -641,7 +641,7 @@ public class EvidenceUtils {
         return filtered;
     }
 
-    
+
     public static Evidence getEvidenceByEvidenceId(Integer id) {
         if (id == null) {
             return null;
