@@ -25,7 +25,9 @@ import java.util.*;
 @Controller
 public class EvidenceController {
     @RequestMapping(value = "/legacy-api/evidence.json", method = RequestMethod.GET)
-    public @ResponseBody List<List<Evidence>> getEvidence(
+    public
+    @ResponseBody
+    List<List<Evidence>> getEvidence(
         HttpMethod method,
         @RequestParam(value = "entrezGeneId", required = false) String entrezGeneId,
         @RequestParam(value = "hugoSymbol", required = false) String hugoSymbol,
@@ -64,7 +66,9 @@ public class EvidenceController {
     }
 
     @RequestMapping(value = "/legacy-api/evidence.json", method = RequestMethod.POST)
-    public @ResponseBody List<EvidenceQueryRes> getEvidence(
+    public
+    @ResponseBody
+    List<EvidenceQueryRes> getEvidence(
         @RequestBody EvidenceQueries body) {
 
         List<EvidenceQueryRes> result = new ArrayList<>();
@@ -92,9 +96,11 @@ public class EvidenceController {
         return result;
     }
 
-    @RequestMapping(value="/legacy-api/evidences/update/{uuid}", method = RequestMethod.POST)
-    public @ResponseBody String updateEvidence(@ApiParam(value = "uuid", required = true) @PathVariable("uuid") String uuid,
-            @RequestBody(required = true) Evidence queryEvidence) {
+    @RequestMapping(value = "/legacy-api/evidences/update/{uuid}", method = RequestMethod.POST)
+    public
+    @ResponseBody
+    String updateEvidence(@ApiParam(value = "uuid", required = true) @PathVariable("uuid") String uuid,
+                          @RequestBody(required = true) Evidence queryEvidence) {
         EvidenceBo evidenceBo = ApplicationContextSingleton.getEvidenceBo();
 
         EvidenceType evidenceType = queryEvidence.getEvidenceType();
@@ -108,7 +114,7 @@ public class EvidenceController {
 
         //List<Evidence> evidences = EvidenceUtils.getEvidenceByUUID(uuid);
         List<Evidence> evidences = evidenceBo.findEvidenceByUUIDs(Collections.singletonList(uuid));
-        if(evidences.isEmpty()){
+        if (evidences.isEmpty()) {
             Evidence evidence = new Evidence();
             GeneBo geneBo = ApplicationContextSingleton.getGeneBo();
             Gene gene = geneBo.findGeneByHugoSymbol(queryEvidence.getGene().getHugoSymbol());
@@ -146,8 +152,8 @@ public class EvidenceController {
 
             evidenceBo.save(evidence);
             evidences.add(evidence);
-        }else{
-            for(Evidence evidence : evidences){
+        } else {
+            for (Evidence evidence : evidences) {
                 evidence.setEvidenceType(evidenceType);
                 evidence.setSubtype(subType);
                 evidence.setCancerType(cancerType);
@@ -172,7 +178,7 @@ public class EvidenceController {
         EvidenceBo evidenceBo = ApplicationContextSingleton.getEvidenceBo();
         if (uuids != null) {
             List<Evidence> evidences = evidenceBo.findEvidenceByUUIDs(uuids);
-            evidenceBo.deleteAll(evidences);
+            deleteEvidences(evidences);
         }
         return "";
     }
@@ -183,9 +189,27 @@ public class EvidenceController {
     String deleteEvidence(@ApiParam(value = "uuid", required = true) @PathVariable("uuid") String uuid) {
         EvidenceBo evidenceBo = ApplicationContextSingleton.getEvidenceBo();
         List<Evidence> evidences = evidenceBo.findEvidenceByUUIDs(Collections.singletonList(uuid));
-        evidenceBo.deleteAll(evidences);
+
+        deleteEvidences(evidences);
         return "";
     }
 
+    private void deleteEvidences(List<Evidence> evidences) {
+        EvidenceBo evidenceBo = ApplicationContextSingleton.getEvidenceBo();
+        List<Alteration> alts = new ArrayList<>();
+        List<Alteration> removedAlts = new ArrayList<>();
 
+        for (Evidence evidence : evidences) {
+            alts.addAll(evidence.getAlterations());
+        }
+        evidenceBo.deleteAll(evidences);
+
+        for (Alteration alt : alts) {
+            List<Evidence> altEvidences = evidenceBo.findEvidencesByAlteration(Collections.singletonList(alt));
+            if (altEvidences == null && altEvidences.isEmpty()) {
+                removedAlts.add(alt);
+            }
+        }
+        ApplicationContextSingleton.getAlterationBo().deleteAll(removedAlts);
+    }
 }
