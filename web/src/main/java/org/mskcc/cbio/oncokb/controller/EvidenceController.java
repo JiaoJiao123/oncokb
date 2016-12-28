@@ -9,10 +9,7 @@ import org.mskcc.cbio.oncokb.bo.AlterationBo;
 import org.mskcc.cbio.oncokb.bo.EvidenceBo;
 import org.mskcc.cbio.oncokb.bo.GeneBo;
 import org.mskcc.cbio.oncokb.model.*;
-import org.mskcc.cbio.oncokb.util.AlterationUtils;
-import org.mskcc.cbio.oncokb.util.ApplicationContextSingleton;
-import org.mskcc.cbio.oncokb.util.EvidenceUtils;
-import org.mskcc.cbio.oncokb.util.MainUtils;
+import org.mskcc.cbio.oncokb.util.*;
 import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
@@ -167,7 +164,14 @@ public class EvidenceController {
             }
         }
 
-        //CacheUtils.setEvidenceByUUID(evidences);
+        // The sample solution for now is updating all gene related evidences.
+        Set<Gene> genes = new HashSet<>();
+        for (Evidence evidence : evidences) {
+            genes.add(evidence.getGene());
+        }
+        for (Gene gene : genes) {
+            CacheUtils.updateGene(gene.getEntrezGeneId());
+        }
         return "success";
     }
 
@@ -178,7 +182,7 @@ public class EvidenceController {
         EvidenceBo evidenceBo = ApplicationContextSingleton.getEvidenceBo();
         if (uuids != null) {
             List<Evidence> evidences = evidenceBo.findEvidenceByUUIDs(uuids);
-            deleteEvidences(evidences);
+            deleteEvidencesAndAlts(evidences);
         }
         return "";
     }
@@ -190,17 +194,21 @@ public class EvidenceController {
         EvidenceBo evidenceBo = ApplicationContextSingleton.getEvidenceBo();
         List<Evidence> evidences = evidenceBo.findEvidenceByUUIDs(Collections.singletonList(uuid));
 
-        deleteEvidences(evidences);
+        deleteEvidencesAndAlts(evidences);
         return "";
     }
 
-    private void deleteEvidences(List<Evidence> evidences) {
+    private void deleteEvidencesAndAlts(List<Evidence> evidences) {
         EvidenceBo evidenceBo = ApplicationContextSingleton.getEvidenceBo();
         List<Alteration> alts = new ArrayList<>();
         List<Alteration> removedAlts = new ArrayList<>();
 
+        // The sample solution for now is updating all gene related evidences and alterations.
+        Set<Gene> genes = new HashSet<>();
+
         for (Evidence evidence : evidences) {
             alts.addAll(evidence.getAlterations());
+            genes.add(evidence.getGene());
         }
         evidenceBo.deleteAll(evidences);
 
@@ -211,5 +219,9 @@ public class EvidenceController {
             }
         }
         ApplicationContextSingleton.getAlterationBo().deleteAll(removedAlts);
+
+        for (Gene gene : genes) {
+            CacheUtils.updateGene(gene.getEntrezGeneId());
+        }
     }
 }
