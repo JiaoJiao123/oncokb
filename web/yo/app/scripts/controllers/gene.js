@@ -101,46 +101,62 @@ angular.module('oncokbApp')
             };
 
             $scope.startFEUUIDImportingFE = function() {
-                importUUIDs($scope.documents, 0);
+                importUUIDs(0);
             };
 
-            function importUUIDs(docs, docIndex) {
+            function importUUIDs(docIndex) {
+                var docs = $scope.documents;
                 var fileId = docs[docIndex].id;
                 storage.getRealtimeDocument(fileId).then(function(realtime) {
                     if (realtime && realtime.error) {
                         console.log('did not get realtime document.');
+                        docIndex++;
+                        importUUIDs(docIndex);
                     } else {
                         var model = realtime.getModel();
                         var gene = model.getRoot().get('gene');
                         if (gene) {
                             var jsonGene = stringUtils.getGeneData(gene);
-                            setUUID(jsonGene, gene);
-                            console.log('Done setting uuid for ', gene.name.getText());
+                            console.log('Setting uuid for ', gene.name.getText());
+                            setUUID(jsonGene, gene, true, docIndex, docs.length);
                         } else {
                             console.log('No gene model');
+                            docIndex++;
+                            importUUIDs(docIndex);
                         }
-                    }
-
-                    docIndex++;
-                    if (docIndex < docs.length) {
-                        $timeout(function() {
-                            importUUIDs(docs, docIndex);
-                        }, 500, false);
-                    } else {
-                        console.log('It is finished!');
                     }
                 });
             }
 
-            function setUUID(jsonData, model) {
-                _.each(_.keys(jsonData), function(item) {
+            function setUUID(jsonData, model, firstLayer, docIndex, docsLength) {
+                _.each(_.keys(jsonData), function(item, firstIndex) {
                     if (item.endsWith('_uuid')) {
-                        model[item].setText(UUIDjs.create(4).toString());
+                        if(model[item] && !model[item].getText() || model[item].getText().length === 0) {
+                            console.log(item);
+                            //debugger;
+                            //model[item].setText(UUIDjs.create(4).toString());
+                        }
                     } else if (item.indexOf('_') === -1 && model[item] && model[item].type === 'List') {
-                        model[item + '_uuid'].setText(UUIDjs.create(4).toString());
-                        _.each(model[item].asArray(), function(itemModel, index) {
-                            setUUID(jsonData[item][index], itemModel);
-                        });
+                        if(model[item + '_uuid'] && (!model[item + '_uuid'].getText() || model[item + '_uuid'].getText().length === 0)) {
+                            console.log(item);
+                            //debugger;
+                            //model[item + '_uuid'].setText(UUIDjs.create(4).toString());
+                        }
+                        if(model[item].length > 0) {
+                            _.each(model[item].asArray(), function(itemModel, index) {
+                                setUUID(jsonData[item][index], itemModel, false, docIndex, docsLength);
+                            });
+                        }
+                    }
+                    if(firstLayer && firstIndex === _.keys(jsonData).length - 1) {
+                        docIndex++;
+                        if (docIndex < docsLength) {
+                            $timeout(function() {
+                                importUUIDs(docIndex);
+                            }, 500, false);
+                        } else {
+                            console.log('It is finished!');
+                        }
                     }
                 });
             }
@@ -1604,8 +1620,7 @@ angular.module('oncokbApp')
             };
 
             $scope.getData = function() {
-                var gene = stringUtils.getGeneData(this.gene);
-                console.log(gene);
+                var jsonData = stringUtils.getGeneData(this.gene);
             };
 
             $scope.updateGene = function() {
