@@ -108,6 +108,10 @@ public class EvidenceController {
         String description = queryEvidence.getDescription();
         String additionalInfo = queryEvidence.getAdditionalInfo();
         Date lastEdit = queryEvidence.getLastEdit();
+        Set<Treatment> treatments = queryEvidence.getTreatments();
+        Set<Article> articles = queryEvidence.getArticles();
+        Set<NccnGuideline> nccnGuidelines = queryEvidence.getNccnGuidelines();
+        Set<ClinicalTrial> clinicalTrials = queryEvidence.getClinicalTrials();
 
         //List<Evidence> evidences = EvidenceUtils.getEvidenceByUUID(uuid);
         List<Evidence> evidences = evidenceBo.findEvidenceByUUIDs(Collections.singletonList(uuid));
@@ -146,7 +150,10 @@ public class EvidenceController {
             evidence.setDescription(description);
             evidence.setAdditionalInfo(additionalInfo);
             evidence.setLastEdit(lastEdit);
-
+            evidence.setTreatments(treatments);
+            evidence.setArticles(articles);
+            evidence.setNccnGuidelines(nccnGuidelines);
+            evidence.setClinicalTrials(clinicalTrials);
             evidenceBo.save(evidence);
             evidences.add(evidence);
         } else {
@@ -159,7 +166,10 @@ public class EvidenceController {
                 evidence.setDescription(description);
                 evidence.setAdditionalInfo(additionalInfo);
                 evidence.setLastEdit(lastEdit);
-
+                evidence.setTreatments(treatments);
+                evidence.setArticles(articles);
+                evidence.setNccnGuidelines(nccnGuidelines);
+                evidence.setClinicalTrials(clinicalTrials);
                 evidenceBo.update(evidence);
             }
         }
