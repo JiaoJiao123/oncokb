@@ -1764,6 +1764,8 @@ angular.module('oncokbApp')
                         resetReview(reviewObj);
                     });
                     reviewObjsRemove = [];
+
+                    $interval.cancel($scope.reviewMoeInterval);
                 }
             };
             $scope.exitReview = function() {
@@ -1832,19 +1834,19 @@ angular.module('oncokbApp')
                 var mutationChanged = false, tumorChanged = false, treatmentChanged = false, mostRecent = 0, tempArr = [];
                 for (var i = 0; i < $scope.gene.mutations.length; i++) {
                     var mutation = $scope.gene.mutations.get(i);
-                    if(mutation.name_review.get('removed')) {
+                    if (mutation.name_review.get('removed')) {
                         continue;
                     }
                     tempArr = [mutation.oncogenic_review, mutation.shortSummary_review, mutation.summary_review];
                     setOriginalStatus(tempArr);
-                    if(checkReview(mutation.shortSummary_uuid) || checkReview(mutation.summary_uuid) || checkReview(mutation.oncogenic_uuid)) {
+                    if (checkReview(mutation.shortSummary_uuid) || checkReview(mutation.summary_uuid) || checkReview(mutation.oncogenic_uuid)) {
                         mutation.oncogenic_review.set('review', true);
                         setUpdatedSignature(tempArr, mutation.oncogenic_review);
                         mutationChanged = true;
                     }
                     tempArr = [mutation.effect_review, mutation.short_review, mutation.description_review];
                     setOriginalStatus(tempArr);
-                    if(checkReview(mutation.short_uuid) || checkReview(mutation.description_uuid) || checkReview(mutation.effect_uuid)) {
+                    if (checkReview(mutation.short_uuid) || checkReview(mutation.description_uuid) || checkReview(mutation.effect_uuid)) {
                         mutation.effect_review.set('review', true);
                         mutation.effect_review.set('mutation_effect', true);
                         setUpdatedSignature(tempArr, mutation.effect_review);
@@ -1852,27 +1854,27 @@ angular.module('oncokbApp')
                     }
                     for (var j = 0; j < mutation.tumors.length; j++) {
                         var tumor = mutation.tumors.get(j);
-                        if(tumor.name_review.get('removed')) {
+                        if (tumor.name_review.get('removed')) {
                             mutationChanged = true;
                             continue;
                         }
                         tempArr = [tumor.shortPrevalence_review, tumor.prevalence_review];
                         setOriginalStatus(tempArr);
-                        if(checkReview(tumor.shortPrevalence_uuid) || checkReview(tumor.prevalence_uuid)) {
+                        if (checkReview(tumor.shortPrevalence_uuid) || checkReview(tumor.prevalence_uuid)) {
                             tumor.prevalence_review.set('review', true);
                             setUpdatedSignature(tempArr, tumor.prevalence_review);
                             tumorChanged = true;
                         }
                         tempArr = [tumor.shortProgImp_review, tumor.progImp_review];
                         setOriginalStatus(tempArr);
-                        if(checkReview(tumor.shortProgImp_uuid) || checkReview(tumor.progImp_uuid)) {
+                        if (checkReview(tumor.shortProgImp_uuid) || checkReview(tumor.progImp_uuid)) {
                             tumor.progImp_review.set('review', true);
                             setUpdatedSignature(tempArr, tumor.progImp_review);
                             tumorChanged = true;
                         }
                         tempArr = [tumor.nccn_review, tumor.nccn.therapy_review, tumor.nccn.disease_review, tumor.nccn.version_review, tumor.nccn.description_review, tumor.nccn.short_review];
                         setOriginalStatus(tempArr);
-                        if(checkReview(tumor.nccn.therapy_uuid) || checkReview(tumor.nccn.disease_uuid) || checkReview(tumor.nccn.version_uuid) || checkReview(tumor.nccn.description_uuid) || checkReview(tumor.nccn.short_uuid)) {
+                        if (checkReview(tumor.nccn.therapy_uuid) || checkReview(tumor.nccn.disease_uuid) || checkReview(tumor.nccn.version_uuid) || checkReview(tumor.nccn.description_uuid) || checkReview(tumor.nccn.short_uuid)) {
                             tumor.nccn_review.set('review', true);
                             setUpdatedSignature(tempArr, tumor.nccn_review);
                             tumorChanged = true;
@@ -1881,13 +1883,13 @@ angular.module('oncokbApp')
                             var ti = tumor.TI.get(k);
                             for (var m = 0; m < ti.treatments.length; m++) {
                                 var treatment = ti.treatments.get(m);
-                                if(treatment.name_review.get('removed')) {
+                                if (treatment.name_review.get('removed')) {
                                     treatmentChanged = true;
                                     continue;
                                 }
                                 tempArr = [treatment.name_review, treatment.level_review, treatment.indication_review, treatment.description_review, treatment.short_review];
                                 setOriginalStatus(tempArr);
-                                if(checkReview(treatment.name_uuid) || checkReview(treatment.level_uuid) || checkReview(treatment.indication_uuid) || checkReview(treatment.description_uuid) || checkReview(treatment.short_uuid)) {
+                                if (checkReview(treatment.name_uuid) || checkReview(treatment.level_uuid) || checkReview(treatment.indication_uuid) || checkReview(treatment.description_uuid) || checkReview(treatment.short_uuid)) {
                                     treatment.name_review.set('review', true);
                                     setUpdatedSignature(tempArr, treatment.name_review);
                                     treatmentChanged = true;
@@ -1897,7 +1899,7 @@ angular.module('oncokbApp')
                             setOriginalStatus([ti.description_review]);
 
                             ti.name_review.set('review', false);
-                            if(checkReview(ti.description_uuid) || treatmentChanged) {
+                            if (checkReview(ti.description_uuid) || treatmentChanged) {
                                 ti.name_review.set('review', true);
                                 tumorChanged = true;
                             }
@@ -1905,18 +1907,19 @@ angular.module('oncokbApp')
                         }
                         tumor.name_review.set('review', false);
                         setOriginalStatus([tumor.summary_review, tumor.trials_review]);
-                        if(tumorChanged || checkReview(tumor.summary_uuid) || checkReview(tumor.trials_uuid)) {
+                        if (tumorChanged || checkReview(tumor.summary_uuid) || checkReview(tumor.trials_uuid)) {
                             tumor.name_review.set('review', true);
                             mutationChanged = true;
                         }
                         tumorChanged = false;
                     }
                     mutation.name_review.set('review', false);
-                    if(mutationChanged) {
+                    if (mutationChanged) {
                         mutation.name_review.set('review', true);
                     }
                     mutationChanged = false;
                 }
+                setReviewModeInterval();
             }
 
             $scope.accept = function (event, type, mutation, tumor, TI, treatment, reviewObj) {
@@ -2111,6 +2114,16 @@ angular.module('oncokbApp')
                     });
                 }
 
+            }
+
+            function setReviewModeInterval() {
+                $interval.cancel($scope.reviewMoeInterval);
+                $scope.reviewMoeInterval = $interval(function() {
+                    if ($rootScope.reviewMode) {
+                        $scope.review();
+                        $interval.cancel($scope.reviewMoeInterval);
+                    }
+                }, 1000 * 60 * 15);
             }
 
             function acceptItem(uuid, reviewObj) {
@@ -3534,6 +3547,10 @@ angular.module('oncokbApp')
 
                 if(type === 'meta') {
                     $scope.metaDocStatus.saved = false;
+                }
+
+                if ($rootScope.reviewMode) {
+                    setReviewModeInterval();
                 }
             }
 
