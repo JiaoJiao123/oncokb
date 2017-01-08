@@ -1967,6 +1967,10 @@ angular.module('oncokbApp')
                     }
                     mutationChanged = false;
                 }
+
+                // Still need to attach the event here. After clicking
+                // Review button, the $rootScope.reviewMode is still false
+                setReviewModeInterval();
             }
 
             $scope.accept = function(event, type, mutation, tumor, TI, treatment, reviewObj) {
