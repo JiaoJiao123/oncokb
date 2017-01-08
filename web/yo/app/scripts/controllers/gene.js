@@ -1919,7 +1919,6 @@ angular.module('oncokbApp')
                     }
                     mutationChanged = false;
                 }
-                setReviewModeInterval();
             }
 
             $scope.accept = function (event, type, mutation, tumor, TI, treatment, reviewObj) {
