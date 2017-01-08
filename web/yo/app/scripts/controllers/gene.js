@@ -1753,11 +1753,22 @@ angular.module('oncokbApp')
                 reviewObj.delete('rollback');
             }
 
+            function hasCollaborator(name) {
+                var collaborators = $scope.realtimeDocument.getCollaborators();
+                if (_.isArray(collaborators)) {
+                    for (var i = 0; i < collaborators.length; i++) {
+                        if (collaborators[i].displayName === name) {
+                            return true;
+                        }
+                    }
+                }
+                return false;
+            }
+
             $scope.review = function() {
                 if ($rootScope.reviewMode) {
                     var currentReviewer = $scope.realtimeDocument.getModel().createString('');
                     $scope.gene.name_review.set('currentReviewer', currentReviewer);
-                    $scope.gene.name_review.get('currentReviewer').setText('None');
                     $rootScope.reviewMode = false;
                     $scope.fileEditable = true;
                     // empty review model for each item
@@ -1792,9 +1803,9 @@ angular.module('oncokbApp')
             $scope.exitReview = function() {
                 var currentReviewer = $scope.realtimeDocument.getModel().createString('');
                 $scope.gene.name_review.set('currentReviewer', currentReviewer);
-                $scope.gene.name_review.get('currentReviewer').setText('None');
-                $scope.disableReview = false;
+                $rootScope.reviewMode = false;
             };
+
             $scope.developerCheck = function() {
                 var developers = ['Hongxin Zhang', 'Jianjiong Gao', 'Jiaojiao Wang'];
                 if (developers.indexOf(Users.getMe().name) === -1) {
@@ -3330,7 +3341,6 @@ angular.module('oncokbApp')
                     });
             }
 
-            $scope.disableReview = false;
             function loadMetaFile(callback) {
                 storage.retrieveMeta().then(function(result) {
                     if (result && result.error) {
@@ -3368,8 +3378,13 @@ angular.module('oncokbApp')
             function saveStateChangedEvent(evt) {
                 // set gene document to readable only when it s in review
                 if (underOthersReview()) {
-                    $scope.fileEditable = false;
+                    $scope.$emit('interruptedDueToOtherReview');
                 } else {
+                    // If document is editable again, need to notify the user.
+                    if (!$scope.fileEditable && $scope.document.editable) {
+                        dialogs.notify('Notification',
+                            'You can now continue editing the document. Thanks.');
+                    }
                     $scope.fileEditable = $scope.document.editable;
                 }
                 if ($scope.$$phase) {
@@ -3441,10 +3456,24 @@ angular.module('oncokbApp')
                 $scope.status.rendering = false;
                 displayAllCollaborators($scope.realtimeDocument, bindDocEvents);
 
-                if (underOthersReview()) {
-                    $scope.disableReview = true;
-                    $scope.fileEditable = false;
+                // Add timeout until the collaborator join event is triggered.
+                $timeout(function() {
+                    if (underOthersReview()) {
+                        $scope.$emit('interruptedDueToOtherReview');
+                    } else {
+                        // if no other is reviewing the current document,
+                        // need to reset the document to initial state.
+                        $scope.exitReview();
+                    }
+                }, 2000);
+            }
+
+            function isCurrentReviewer() {
+                var currentReviewer = $scope.gene.name_review.get('currentReviewer');
+                if (currentReviewer && currentReviewer.getText() === User.name) {
+                    return true;
                 }
+                return false;
             }
 
             function valueChangedEvent(evt) {
@@ -3494,14 +3523,16 @@ angular.module('oncokbApp')
                 var currentReviewer = $scope.gene.name_review.get('currentReviewer');
                 if (currentReviewer) {
                     var _name = currentReviewer.getText();
-                    if (currentReviewer.getText() !== 'None' &&
-                        currentReviewer.getText() !== User.name) {
+                    if (_name &&
+                        _name !== User.name &&
+                        hasCollaborator(currentReviewer.getText())) {
                         return true;
                     }
                 }
                 return false;
             }
 
+            // Deprecated...
             function reviewerCheck() {
                 // check need to set the doc back to normal
                 var currentReviewer = $scope.gene.name_review.get('currentReviewer').getText();
@@ -3519,7 +3550,6 @@ angular.module('oncokbApp')
                 if (flag) {
                     currentReviewer = $scope.realtimeDocument.getModel().createString('');
                     $scope.gene.name_review.set('currentReviewer', currentReviewer);
-                    $scope.gene.name_review.get('currentReviewer').setText('None');
                 }
             }
 
@@ -4095,6 +4125,21 @@ angular.module('oncokbApp')
                 dialogs.error('Error', errorMessage);
                 documentClosed();
                 $location.path('/genes');
+            });
+
+            $scope.$on('interruptedDueToOtherReview', function() {
+                // if previously the document is editable, need to notify
+                // the current user.
+                if ($scope.fileEditable) {
+                    dialogs.notify('Warning',
+                        $scope.gene.name_review.get('currentReviewer') +
+                        ' started to review the document, ' +
+                        'you can not change anything at this moment. ' +
+                        'We will notify you once the reviewer finish ' +
+                        'the editing. Thanks. ' +
+                        'Sorry for any inconvinience.');
+                }
+                $scope.fileEditable = false;
             });
 
             $scope.$on('$locationChangeStart', function() {
