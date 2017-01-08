@@ -1767,17 +1767,7 @@ angular.module('oncokbApp')
 
             $scope.review = function() {
                 if ($rootScope.reviewMode) {
-                    var currentReviewer = $scope.realtimeDocument.getModel().createString('');
-                    $scope.gene.name_review.set('currentReviewer', currentReviewer);
-                    $rootScope.reviewMode = false;
-                    $scope.fileEditable = true;
-                    // empty review model for each item
-                    _.each(reviewObjsRemove, function(reviewObj) {
-                        resetReview(reviewObj);
-                    });
-                    reviewObjsRemove = [];
-
-                    $interval.cancel($scope.reviewMoeInterval);
+                    $scope.exitReview();
                 } else {
                     var collaborators = $scope.realtimeDocument.getCollaborators();
                     if (collaborators.length > 1) {
@@ -1804,6 +1794,13 @@ angular.module('oncokbApp')
                 var currentReviewer = $scope.realtimeDocument.getModel().createString('');
                 $scope.gene.name_review.set('currentReviewer', currentReviewer);
                 $rootScope.reviewMode = false;
+                $scope.fileEditable = true;
+                // empty review model for each item
+                _.each(reviewObjsRemove, function(reviewObj) {
+                    resetReview(reviewObj);
+                });
+                reviewObjsRemove = [];
+                $interval.cancel($scope.reviewMoeInterval);
             };
 
             $scope.developerCheck = function() {
@@ -2173,8 +2170,7 @@ angular.module('oncokbApp')
                 $interval.cancel($scope.reviewMoeInterval);
                 $scope.reviewMoeInterval = $interval(function() {
                     if ($rootScope.reviewMode) {
-                        $scope.review();
-                        $interval.cancel($scope.reviewMoeInterval);
+                        $scope.exitReview();
                     }
                 }, 1000 * 60 * 15);
             }
@@ -4150,6 +4146,14 @@ angular.module('oncokbApp')
                 storage.closeDocument();
                 documentClosed();
             });
+
+            $window.onbeforeunload = function() {
+                // If in the review mode, exit the review mode first then
+                // close the tab.
+                if ($rootScope.reviewMode) {
+                    $scope.exitReview();
+                }
+            };
         }]
     )
     .controller('ModifyTumorTypeCtrl', function($scope, $modalInstance, data, _, OncoKB) {
