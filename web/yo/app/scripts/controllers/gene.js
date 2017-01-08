@@ -3495,7 +3495,7 @@ angular.module('oncokbApp')
                 if (currentReviewer) {
                     var _name = currentReviewer.getText();
                     if (currentReviewer.getText() !== 'None' &&
-                        currentReviewer.getText() !== User.getMe().name) {
+                        currentReviewer.getText() !== User.name) {
                         return true;
                     }
                 }
