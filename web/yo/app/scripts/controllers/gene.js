@@ -2109,7 +2109,7 @@ angular.module('oncokbApp')
                 }
                 if (TI !== null) {
                     if (treatment === null) {
-                        dataUUID = TI.name_uuid.getText();
+                        dataUUID = TI.description_uuid.getText();
                         data.description = TI.description.getText();
                     } else {
                         dataUUID = treatment.name_uuid.getText();
@@ -2771,6 +2771,7 @@ angular.module('oncokbApp')
                             collectUUIDs('treatment', treatment, uuids);
                         });
                     });
+                    uuids.push(obj.trials_uuid.getText());
                 }
                 if (type === 'treatment') {
                     uuids.push(obj.name_uuid.getText());
