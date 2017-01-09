@@ -1770,14 +1770,14 @@ angular.module('oncokbApp')
                     $scope.exitReview();
                 } else {
                     var collaborators = $scope.realtimeDocument.getCollaborators();
-                    if (collaborators.length > 1) {
-                        var otherCollaborators = [];
-                        _.each(collaborators, function(collaborator) {
-                            if (!collaborator.isMe) {
-                                otherCollaborators.push(collaborator.displayName);
-                            }
-                        });
-                        var dlg = dialogs.confirm('Reminder', otherCollaborators.join(', ') + ' are currently working on this gene document. Enter review mode will disable them from editing. Please notify them before start reviewing!');
+                    var otherCollaborators = {};
+                    _.each(collaborators, function(collaborator) {
+                        if (collaborator.displayName !== User.name) {
+                            otherCollaborators[collaborator.displayName] = '';
+                        }
+                    });
+                    if (Object.keys(otherCollaborators).length > 0) {
+                        var dlg = dialogs.confirm('Reminder', Object.keys(otherCollaborators).join(', ') + ' are currently working on this gene document. Enter review mode will disable them from editing. Please notify them before start reviewing!');
                         dlg.result.then(function() {
                             $timeout(function() {
                                 prepareReviewItems();
@@ -4135,7 +4135,7 @@ angular.module('oncokbApp')
                         $scope.gene.name_review.get('currentReviewer') +
                         ' started to review the document, ' +
                         'you can not change anything at this moment. ' +
-                        'We will notify you once the reviewer finish ' +
+                        'We will notify you once the reviewer finished ' +
                         'the editing. Thanks. ' +
                         'Sorry for any inconvinience.');
                 }
