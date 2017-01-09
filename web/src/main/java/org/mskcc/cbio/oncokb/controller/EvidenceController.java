@@ -5,9 +5,7 @@
 package org.mskcc.cbio.oncokb.controller;
 
 import io.swagger.annotations.ApiParam;
-import org.mskcc.cbio.oncokb.bo.AlterationBo;
-import org.mskcc.cbio.oncokb.bo.EvidenceBo;
-import org.mskcc.cbio.oncokb.bo.GeneBo;
+import org.mskcc.cbio.oncokb.bo.*;
 import org.mskcc.cbio.oncokb.model.*;
 import org.mskcc.cbio.oncokb.util.*;
 import org.springframework.http.HttpMethod;
@@ -17,11 +15,6 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
-import org.mskcc.cbio.oncokb.bo.ArticleBo;
-import org.mskcc.cbio.oncokb.bo.ClinicalTrialBo;
-import org.mskcc.cbio.oncokb.bo.DrugBo;
-import org.mskcc.cbio.oncokb.bo.NccnGuidelineBo;
-import org.mskcc.cbio.oncokb.bo.TreatmentBo;
 
 /**
  * @author jgao
@@ -191,7 +184,7 @@ public class EvidenceController {
         NccnGuidelineBo nccnGuidelineBo = ApplicationContextSingleton.getNccnGuidelineBo();
         ClinicalTrialBo clinicalTrialBo = ApplicationContextSingleton.getClinicalTrialBo();
         DrugBo drugBo = ApplicationContextSingleton.getDrugBo();
-        
+
         EvidenceType evidenceType = queryEvidence.getEvidenceType();
         String subType = queryEvidence.getSubtype();
         String cancerType = queryEvidence.getCancerType();
@@ -204,7 +197,7 @@ public class EvidenceController {
         Set<Article> articles = queryEvidence.getArticles();
         Set<NccnGuideline> nccnGuidelines = queryEvidence.getNccnGuidelines();
         Set<ClinicalTrial> clinicalTrials = queryEvidence.getClinicalTrials();
-        
+
         if(treatments != null && !treatments.isEmpty()){
             for(Treatment treatment : treatments) {
                 Set<Drug> drugs = treatment.getDrugs();
@@ -214,13 +207,13 @@ public class EvidenceController {
                     }
                 }
                 treatmentBo.saveOrUpdate(treatment);
-            } 
+            }
         }
         if(articles != null && !articles.isEmpty()){
             for(Article article : articles) {
                 articleBo.saveOrUpdate(article);
             }
-        }  
+        }
         if(nccnGuidelines != null && !nccnGuidelines.isEmpty()){
             for(NccnGuideline nccnGuideline : nccnGuidelines) {
                 nccnGuidelineBo.saveOrUpdate(nccnGuideline);
@@ -236,6 +229,11 @@ public class EvidenceController {
             Evidence evidence = new Evidence();
             GeneBo geneBo = ApplicationContextSingleton.getGeneBo();
             Gene gene = geneBo.findGeneByHugoSymbol(queryEvidence.getGene().getHugoSymbol());
+
+            // if the gene is not exist, return empty list
+            if (gene == null) {
+                return new ArrayList<>();
+            }
 
             AlterationType type = AlterationType.MUTATION;
             Set<Alteration> queryAlterations = queryEvidence.getAlterations();
