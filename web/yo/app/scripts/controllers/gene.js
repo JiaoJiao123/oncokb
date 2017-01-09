@@ -1779,7 +1779,10 @@ angular.module('oncokbApp')
                 var developers = ['Hongxin Zhang', 'Jianjiong Gao', 'Jiaojiao Wang'];
                 if(developers.indexOf(Users.getMe().name) !== -1) return true;
                 else return false;
-            }
+            };
+            $scope.geneMainDivStyle = {
+                opacity: '1'
+            };
             function checkReview(uuid) {
                 uuid = uuid.getText();
                 if($rootScope.reviewMeta.get(uuid) && $rootScope.reviewMeta.get(uuid).get('review'))return true;
@@ -1920,7 +1923,6 @@ angular.module('oncokbApp')
                     mutationChanged = false;
                 }
             }
-            $scope.reviewSavingStatus = false;
             $scope.accept = function (event, type, mutation, tumor, TI, treatment, reviewObj) {
                 if(event !== null) {
                     $scope.stopCollopse(event);
@@ -1928,7 +1930,6 @@ angular.module('oncokbApp')
                 if(reviewObj.get('action')) {
                     return;
                 }
-                $scope.reviewSavingStatus = true;
                 var dataUUID = '', extraDataUUID = '';
                 var data = {
                     'additionalInfo': null,
@@ -2089,29 +2090,35 @@ angular.module('oncokbApp')
                         "oncogene": $scope.gene.type.get('OCG').trim().length > 0 ? true : false,
                         "tsg": $scope.gene.type.get('TSG').trim().length > 0 ? true : false
                     };
+                    $scope.$emit('startSaveDataToDatabase');
                     DatabaseConnector.updateGeneType($scope.gene.name.getText(), params, function (result) {
                         geneModelUpdate(type, mutation, tumor, TI, treatment);
+                        $scope.$emit('doneSaveDataToDatabase');
                     }, function (error) {
                         console.log('fail to update to database', error);
-                        $scope.reviewSavingStatus = false;
                         dialogs.error('Error', 'Failed to update to database! Please contact the developer.');
+                        $scope.$emit('doneSaveDataToDatabase');
                     });
                 } else if(dataUUID.length > 0) {
+                    $scope.$emit('startSaveDataToDatabase');
                     DatabaseConnector.updateEvidence(dataUUID, data, function (result) {
                         geneModelUpdate(type, mutation, tumor, TI, treatment);
                         if(extraDataUUID.length > 0) {
                             DatabaseConnector.updateEvidence(extraDataUUID, extraData, function (result) {
                                 geneModelUpdate(secondType, mutation, tumor, TI, treatment);
+                                $scope.$emit('doneSaveDataToDatabase');
                             }, function (error) {
                                 console.log('fail to update to database', error);
-                                $scope.reviewSavingStatus = false;
                                 dialogs.error('Error', 'Failed to update to database! Please contact the developer.');
+                                $scope.$emit('doneSaveDataToDatabase');
                             });
+                        }else{
+                            $scope.$emit('doneSaveDataToDatabase');
                         }
                     }, function (error) {
                         console.log('fail to update to database', error);
-                        $scope.reviewSavingStatus = false;
                         dialogs.error('Error', 'Failed to update to database! Please contact the developer.');
+                        $scope.$emit('doneSaveDataToDatabase');
                     });
                 }
 
@@ -2198,7 +2205,6 @@ angular.module('oncokbApp')
                 default:
                     break;
                 }
-                $scope.reviewSavingStatus = false;
             }
 
             function rejectItem(uuid, reviewObj, obj, content) {
@@ -2770,20 +2776,20 @@ angular.module('oncokbApp')
 
             $scope.confirmDelete = function(event, type, obj, mutationIndex, tumorTypeIndex, therapyCategoryIndex, therapyIndex){
                 $scope.stopCollopse(event);
-                $scope.reviewSavingStatus = true;
                 var uuids = collectUUIDs(type, obj, []);
                 console.log(uuids);
                 //make the api call to delete evidences
+                $scope.$emit('startSaveDataToDatabase');
                 DatabaseConnector.deleteEvidences(uuids, function (result) {
                     removeInModel(mutationIndex, tumorTypeIndex, therapyCategoryIndex, therapyIndex);
                     _.each(uuids, function(uuid){
                         $rootScope.reviewMeta.delete(uuid);
                     });
-                    $scope.reviewSavingStatus = false;
+                    $scope.$emit('doneSaveDataToDatabase');
                 }, function (error) {
                     console.log('fail to update to database', error);
-                    $scope.reviewSavingStatus = false;
                     dialogs.error('Error', 'Failed to update to database! Please contact the developer.');
+                    $scope.$emit('doneSaveDataToDatabase');
                 });
             };
 
@@ -4082,6 +4088,17 @@ angular.module('oncokbApp')
                 }
                 $scope.fileEditable = false;
             });
+
+            $scope.$on('startSaveDataToDatabase', function() {
+                $scope.status.saveDataToDatabase = true;
+                $scope.geneMainDivStyle.opacity = 0.1;
+            });
+
+            $scope.$on('doneSaveDataToDatabase', function() {
+                $scope.status.saveDataToDatabase = false;
+                $scope.geneMainDivStyle.opacity = 1;
+            });
+
             $scope.$on('$locationChangeStart', function() {
                 storage.closeDocument();
                 documentClosed();

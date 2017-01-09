@@ -1,4 +1,4 @@
-<div ng-hide="status.rendering" ng-if="gene" class="geneMainDiv">
+<div ng-hide="status.rendering" ng-if="gene" class="geneMainDiv" ng-style="geneMainDivStyle">
   <div id="gene" style="margin-bottom:50px">
     <h2>
       <!-- Gene: <span>{{gene.name.text}}</span> -->
@@ -52,10 +52,6 @@
       <div ng-if="reviewMode">
           <br/><br/>
           <p style="color:red;font-size:20px;"><b>You are currently in the review mode. Make sure click Done Review button to exit!</b></p>
-          <loading ng-model="reviewSavingStatus" content="Saving to database"></loading>
-          <div ng-if="reviewSavingStatus">
-              <br/><br/><br/><br/>
-          </div>
       </div>
 
     <div ng-if="displayCheck(gene.summary_uuid, gene.summary_review)">
@@ -607,3 +603,4 @@
 </div>
 
 <loading ng-model="status.rendering" content="Please wait, we are loading gene information."></loading>
+<loading ng-model="status.saveDataToDatabase" content="Please wait, we are saving the data into database." class="loading-save-to-database"></loading>
