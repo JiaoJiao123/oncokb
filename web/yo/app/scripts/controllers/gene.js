@@ -1549,7 +1549,7 @@ angular.module('oncokbApp')
                         _mutation.name.setText(filteredContent.join(','));
                         _mutation.oncogenic_eStatus.set('obsolete', 'false');
                         _mutation.shortSummary_eStatus.set('obsolete', 'false');
-
+                        _mutation.name_review.set('section', 'added');
                         this.gene.mutations.push(_mutation);
                         $scope.realtimeDocument.getModel().endCompoundOperation();
                         $scope.geneStatus[this.gene.mutations.length - 1] = new GeneStatusSingleton();
@@ -1644,9 +1644,9 @@ angular.module('oncokbApp')
                 }
                 // review mode check
                 if (mutationReview && mutationReview.get('removed') || tumorReview && tumorReview.get('removed') || treatmentReview && treatmentReview.get('removed')) {
-                    // removedItem is set to true to indicate it is inside a deleted section
-                    if(reviewObj && !reviewObj.get('removedItem')) {
-                        reviewObj.set('removedItem', true);
+                    // section is set to true to indicate it is inside a deleted section
+                    if(reviewObj && !reviewObj.get('section')) {
+                        reviewObj.set('section', 'deleted');
                     }
                     return true;
                 }
@@ -1688,9 +1688,9 @@ angular.module('oncokbApp')
                     return false;
                 }
                 if (type === 'accept') {
-                    return $rootScope.reviewMode && reviewObj.get('action') !== 'rejected' && !reviewObj.get('rollback') && !reviewObj.get('removedItem');
+                    return $rootScope.reviewMode && reviewObj.get('action') !== 'rejected' && !reviewObj.get('rollback') && !reviewObj.get('section');
                 } else if (type === 'reject') {
-                    return $rootScope.reviewMode && reviewObj.get('action') !== 'accepted' && !reviewObj.get('rollback') && !reviewObj.get('removedItem');
+                    return $rootScope.reviewMode && reviewObj.get('action') !== 'accepted' && !reviewObj.get('rollback') && !reviewObj.get('section');
                 }
             };
             function resetReview(reviewObj) {
@@ -2322,7 +2322,7 @@ angular.module('oncokbApp')
                 setReview(uuid, false);
                 delete myUpdatedEvidences[uuid];
                 reviewObj.delete('lastReviewed');
-                reviewObj.delete('removedItem');
+                reviewObj.delete('section');
                 reviewObj.delete('updatedBy');
                 reviewObj.delete('updateTime');
             }
@@ -2406,7 +2406,7 @@ angular.module('oncokbApp')
                     obj.set('OCG', lastReviewedContent.OCG);
                 }
                 reviewObj.delete('lastReviewed');
-                reviewObj.delete('removedItem');
+                reviewObj.delete('section');
                 reviewObj.delete('updatedBy');
                 reviewObj.delete('updateTime');
             }
