@@ -1644,12 +1644,14 @@ angular.module('oncokbApp')
                 }
                 // review mode check
                 if (mutationReview && mutationReview.get('removed') || tumorReview && tumorReview.get('removed') || treatmentReview && treatmentReview.get('removed')) {
+                    // removedItem is set to true to indicate it is inside a deleted section
                     if(reviewObj && !reviewObj.get('removedItem')) {
                         reviewObj.set('removedItem', true);
                     }
                     return true;
                 }
                 // precisely check for this element
+                precise = _.isBoolean(precise) ? precise : false;
                 if(precise) {
                     if (uuid !== null && checkReview(uuid)) {
                         return true;
