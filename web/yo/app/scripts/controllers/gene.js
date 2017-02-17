@@ -1549,7 +1549,9 @@ angular.module('oncokbApp')
                         _mutation.name.setText(filteredContent.join(','));
                         _mutation.oncogenic_eStatus.set('obsolete', 'false');
                         _mutation.shortSummary_eStatus.set('obsolete', 'false');
-                        _mutation.name_review.set('section', 'added');
+                        _mutation.name_review.set('status', 'added');
+                        _mutation.name_review.set('updatedBy', User.name);
+                        _mutation.name_review.set('updateTime', new Date().toLocaleString());
                         this.gene.mutations.push(_mutation);
                         $scope.realtimeDocument.getModel().endCompoundOperation();
                         $scope.geneStatus[this.gene.mutations.length - 1] = new GeneStatusSingleton();
@@ -1637,16 +1639,23 @@ angular.module('oncokbApp')
             $scope.displayCheck = function(uuid, reviewObj, mutationReview, tumorReview, treatmentReview, precise) {
                 // regular mode check
                 if (!$rootScope.reviewMode) {
-                    if (mutationReview && mutationReview.get('removed') || tumorReview && tumorReview.get('removed') || treatmentReview && treatmentReview.get('removed')) {
+                    if (mutationReview && mutationReview.get('status') === 'removed' || tumorReview && tumorReview.get('status') === 'removed' || treatmentReview && treatmentReview.get('status') === 'removed') {
                         return false;
                     }
                     return true;
                 }
                 // review mode check
-                if (mutationReview && mutationReview.get('removed') || tumorReview && tumorReview.get('removed') || treatmentReview && treatmentReview.get('removed')) {
+                if (mutationReview && mutationReview.get('status') === 'removed' || tumorReview && tumorReview.get('status') === 'removed' || treatmentReview && treatmentReview.get('status') === 'removed') {
                     // section is set to true to indicate it is inside a deleted section
-                    if(reviewObj && !reviewObj.get('section')) {
-                        reviewObj.set('section', 'deleted');
+                    if(reviewObj && !reviewObj.get('status')) {
+                        reviewObj.set('status', 'insideRemoved');
+                    }
+                    return true;
+                }
+                if (mutationReview && mutationReview.get('status') === 'added' || tumorReview && tumorReview.get('status') === 'added' || treatmentReview && treatmentReview.get('status') === 'added') {
+                    // section is set to true to indicate it is inside a deleted section
+                    if(reviewObj && !reviewObj.get('status')) {
+                        reviewObj.set('status', 'insideAdded');
                     }
                     return true;
                 }
@@ -1664,7 +1673,9 @@ angular.module('oncokbApp')
             $scope.signatureCheck = function(reviewObj, mutationReview, tumorReview, treatmentReview) {
                 if (!$rootScope.reviewMode) {
                     return false;
-                } else if (mutationReview && mutationReview.get('removed') || tumorReview && tumorReview.get('removed') || treatmentReview && treatmentReview.get('removed')) {
+                } else if (mutationReview && (mutationReview.get('status') === 'added' || mutationReview.get('status') === 'removed')
+                    || tumorReview && (tumorReview.get('status') === 'added' || tumorReview.get('status') === 'removed')
+                    || treatmentReview && (treatmentReview.get('status') === 'added' || treatmentReview.get('status') === 'removed')) {
                     return false;
                 } else if (reviewObj.get('action')) {
                     return false;
@@ -1684,13 +1695,13 @@ angular.module('oncokbApp')
                 }
             };
             $scope.iconExist = function(type, reviewObj, nameReview) {
-                if (nameReview && nameReview.get('removed')) {
+                if (nameReview && (nameReview.get('status') === 'added' || nameReview.get('status') === 'removed')) {
                     return false;
                 }
                 if (type === 'accept') {
-                    return $rootScope.reviewMode && reviewObj.get('action') !== 'rejected' && !reviewObj.get('rollback') && !reviewObj.get('section');
+                    return $rootScope.reviewMode && reviewObj.get('action') !== 'rejected' && !reviewObj.get('rollback');
                 } else if (type === 'reject') {
-                    return $rootScope.reviewMode && reviewObj.get('action') !== 'accepted' && !reviewObj.get('rollback') && !reviewObj.get('section');
+                    return $rootScope.reviewMode && reviewObj.get('action') !== 'accepted' && !reviewObj.get('rollback');
                 }
             };
             function resetReview(reviewObj) {
@@ -1802,6 +1813,7 @@ angular.module('oncokbApp')
             var myGeneTypeEvidence = {};
             var myUpdatedEvidenceModels = [];
             var myDeletedEvidenceIndice = [];
+            var addedEvidenceModels = [];
             function formMyEvidences(type, mutation, tumor, TI, treatment) {
                 var evidenceResult = formEvidenceItem(type, mutation, tumor, TI, treatment);
                 var dataUUID = evidenceResult[0];
@@ -1826,6 +1838,7 @@ angular.module('oncokbApp')
             }
             function prepareReviewItems() {
                 $rootScope.reviewMode = true;
+                var added = false;
                 var currentReviewer = $scope.realtimeDocument.getModel().createString(User.name);
                 $scope.gene.name_review.set('currentReviewer', currentReviewer);
                 $scope.allMyChanges = false;
@@ -1833,6 +1846,7 @@ angular.module('oncokbApp')
                 myDeletedEvidences = [];
                 myGeneTypeEvidence = {};
                 myUpdatedEvidenceModels = [];
+                addedEvidenceModels = [];
                 setOriginalStatus([$scope.gene.summary_review, $scope.gene.type_review, $scope.gene.background_review]);
                 if($scope.gene.summary_review.get('updatedBy') === User.name) {
                     formMyEvidences('GENE_SUMMARY', null, null, null, null);
@@ -1853,9 +1867,12 @@ angular.module('oncokbApp')
                 var tempArr = [];
                 for (var i = 0; i < $scope.gene.mutations.length; i++) {
                     var mutation = $scope.gene.mutations.get(i);
-                    if (mutation.name_review.get('removed')) {
+                    if (mutation.name_review.get('status') === 'removed') {
                         myDeletedEvidences = collectUUIDs('mutation', mutation, myDeletedEvidences);
                         continue;
+                    }
+                    if (mutation.name_review.get('status') === 'added') {
+                        added = true;
                     }
                     tempArr = [mutation.oncogenic_review, mutation.shortSummary_review, mutation.summary_review];
                     setOriginalStatus(tempArr);
@@ -1878,9 +1895,12 @@ angular.module('oncokbApp')
                     }
                     for (var j = 0; j < mutation.tumors.length; j++) {
                         var tumor = mutation.tumors.get(j);
-                        if (tumor.name_review.get('removed')) {
+                        if (tumor.name_review.get('status') === 'removed') {
                             mutationChanged = true;
                             myDeletedEvidences = collectUUIDs('tumor', tumor, myDeletedEvidences);
+                            continue;
+                        }
+                        if (tumor.name_review.get('status') === 'added') {
                             continue;
                         }
                         tempArr = [tumor.shortPrevalence_review, tumor.prevalence_review];
@@ -1914,9 +1934,12 @@ angular.module('oncokbApp')
                             var ti = tumor.TI.get(k);
                             for (var m = 0; m < ti.treatments.length; m++) {
                                 var treatment = ti.treatments.get(m);
-                                if (treatment.name_review.get('removed')) {
+                                if (treatment.name_review.get('status') === 'removed') {
                                     treatmentChanged = true;
                                     myDeletedEvidences = collectUUIDs('treatment', treatment, myDeletedEvidences);
+                                    continue;
+                                }
+                                if (treatment.name_review.get('status') === 'added') {
                                     continue;
                                 }
                                 tempArr = [treatment.name_review, treatment.level_review, treatment.indication_review, treatment.description_review, treatment.short_review];
@@ -2322,7 +2345,6 @@ angular.module('oncokbApp')
                 setReview(uuid, false);
                 delete myUpdatedEvidences[uuid];
                 reviewObj.delete('lastReviewed');
-                reviewObj.delete('section');
                 reviewObj.delete('updatedBy');
                 reviewObj.delete('updateTime');
             }
@@ -2567,7 +2589,9 @@ angular.module('oncokbApp')
                     } else {
                         model.beginCompoundOperation();
                         _tumorType = model.create(OncoKB.Tumor);
-
+                        _tumorType.name_review.set('status', 'added');
+                        _tumorType.name_review.set('updatedBy', User.name);
+                        _tumorType.name_review.set('updateTime', new Date().toLocaleString());
                         _.each($scope.meta.newCancerTypes, function(ct) {
                             if (ct.mainType && ct.mainType.name) {
                                 var cancerType = model.create(OncoKB.CancerType);
@@ -2643,6 +2667,9 @@ angular.module('oncokbApp')
                     } else {
                         $scope.realtimeDocument.getModel().beginCompoundOperation();
                         _treatment = $scope.realtimeDocument.getModel().create(OncoKB.Treatment);
+                        _treatment.name_review.set('status', 'added');
+                        _treatment.name_review.set('updatedBy', User.name);
+                        _treatment.name_review.set('updateTime', new Date().toLocaleString());
                         _treatment.name.setText(newTIName);
                         _treatment.type.setText('Therapy');
                         if ($scope.checkTI(ti, 1, 1)) {
@@ -2840,21 +2867,21 @@ angular.module('oncokbApp')
                             if (isNaN(tumorTypeIndex)) {
                                 _index = Number(angular.copy(mutationIndex));
                                 var mutation = $scope.gene.mutations.get(_index);
-                                mutation.name_review.set('removed', true);
+                                mutation.name_review.set('status', 'removed');
                                 mutation.name_review.set('updatedBy', User.name);
                                 mutation.name_review.set('updateTime', new Date().toLocaleString());
                                 setReview($scope.gene.mutations.get(_index).name_uuid, true);
                             } else if (!isNaN(therapyCategoryIndex) && !isNaN(therapyIndex)) {
                                 _index = Number(angular.copy(therapyIndex));
                                 var treatment = $scope.gene.mutations.get(mutationIndex).tumors.get(tumorTypeIndex).TI.get(therapyCategoryIndex).treatments.get(_index);
-                                treatment.name_review.set('removed', true);
+                                treatment.name_review.set('status', 'removed');
                                 treatment.name_review.set('updatedBy', User.name);
                                 treatment.name_review.set('updateTime', new Date().toLocaleString());
                                 setReview(treatment.name_uuid, true);
                             } else {
                                 _index = Number(angular.copy(tumorTypeIndex));
                                 var tumor = $scope.gene.mutations.get(mutationIndex).tumors.get(_index);
-                                tumor.name_review.set('removed', true);
+                                tumor.name_review.set('status', 'removed');
                                 tumor.name_review.set('updatedBy', User.name);
                                 tumor.name_review.set('updateTime', new Date().toLocaleString());
                                 setReview(tumor.name_uuid, true);

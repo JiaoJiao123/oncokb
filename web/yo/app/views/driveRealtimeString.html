@@ -1,14 +1,14 @@
 <div class="drive-realtime-string">
     <div ng-if="t === 'p'">
-        <h4 ng-if="reviewMode && !rs.get('action') && !rs.get('section')">New Content:</h4>
+        <h4 ng-if="reviewMode && !rs.get('action') && rs.get('status') !== 'insideAdded' && rs.get('status') !== 'insideRemoved'">New Content:</h4>
         <p class="doubleH" ng-if="!reviewMode || !rs.get('action')"
            ng-class="{editableBox:fe, unEditableBox:!fe}"
            contenteditable="{{!reviewMode ? fe : true}}"
            placeholder="{{ph}}"
            ng-model="content.stringO">
         </p>
-        <h4 ng-if="reviewMode && !rs.get('action') && !rs.get('section')">Old Content:</h4>
-        <p ng-if="reviewMode && !rs.get('section')">{{!rs.get('action') ? rs.get('lastReviewed') : content.stringO}}
+        <h4 ng-if="reviewMode && !rs.get('action') && rs.get('status') !== 'insideAdded' && rs.get('status') !== 'insideRemoved'">Old Content:</h4>
+        <p ng-if="reviewMode && rs.get('status') !== 'insideAdded' && rs.get('status') !== 'insideRemoved'">{{!rs.get('action') ? rs.get('lastReviewed') : content.stringO}}
         </p>
         <pub-iframe
             ng-model="content.stringO"
@@ -16,23 +16,23 @@
         </pub-iframe>
     </div>
     <div ng-if="t === 'short'">
-        <h4 ng-if="reviewMode && !rs.get('action') && !rs.get('section')">New Content:</h4>
+        <h4 ng-if="reviewMode && !rs.get('action') && rs.get('status') !== 'insideAdded' && rs.get('status') !== 'insideRemoved'">New Content:</h4>
         <p ng-class="{editableBox:fe, unEditableBox:!fe}" ng-if="!reviewMode || !rs.get('action')"
            contenteditable="{{!reviewMode ? fe : true}}"
            placeholder="{{ph}}"
            ng-model="content.stringO">
         </p>
-        <h4 ng-if="reviewMode && !rs.get('action') && !rs.get('section')">Old Content:</h4>
-        <p ng-if="reviewMode && !rs.get('section')">{{!rs.get('action') ? rs.get('lastReviewed') : content.stringO}}
+        <h4 ng-if="reviewMode && !rs.get('action') && rs.get('status') !== 'insideAdded' && rs.get('status') !== 'insideRemoved'">Old Content:</h4>
+        <p ng-if="reviewMode && rs.get('status') !== 'insideAdded' && rs.get('status') !== 'insideRemoved'">{{!rs.get('action') ? rs.get('lastReviewed') : content.stringO}}
     </div>
     <div ng-if="t === 'treatment-select'" class="treatment-select">
         <div>
-            <h4 ng-if="reviewMode && !rs.get('action') && !rs.get('section')">New Content:</h4>
+            <h4 ng-if="reviewMode && !rs.get('action') && rs.get('status') !== 'insideAdded' && rs.get('status') !== 'insideRemoved'">New Content:</h4>
             <select ng-model="content.stringO" ng-if="!reviewMode || !rs.get('action')"
                     ng-options="opt.value as opt.label for opt in o">
             </select>
-            <h4 ng-if="reviewMode && !rs.get('action') && !rs.get('section')">Old Content:</h4>
-            <p ng-if="reviewMode && !rs.get('section')">{{!rs.get('action') ? rs.get('lastReviewed') : content.stringO}}
+            <h4 ng-if="reviewMode && !rs.get('action') && rs.get('status') !== 'insideAdded' && rs.get('status') !== 'insideRemoved'">Old Content:</h4>
+            <p ng-if="reviewMode && rs.get('status') !== 'insideAdded' && rs.get('status') !== 'insideRemoved'">{{!rs.get('action') ? rs.get('lastReviewed') : content.stringO}}
             </p>
         </div>
         <div class="propagation" ng-if="!reviewMode && content.propagationOpts.length > 0">
@@ -43,18 +43,18 @@
         </div>
     </div>
     <div ng-if="t === 'select-chosen'" class="chosen-full-width">
-        <h4 ng-if="reviewMode && !rs.get('action') && !rs.get('section')">New Content:</h4>
+        <h4 ng-if="reviewMode && !rs.get('action') && rs.get('status') !== 'insideAdded' && rs.get('status') !== 'insideRemoved'">New Content:</h4>
         <select chosen ng-attr-id="{{chosenid}}" allow-single-deselect="true" ng-model="content.stringO"
                 ng-options="opt for opt in o">
             <option value="NA"></option>
         </select>
-        <h4 ng-if="reviewMode && !rs.get('action') && !rs.get('section')">Old Content:</h4>
-        <p ng-if="reviewMode && !rs.get('section')">{{!rs.get('action') ? rs.get('lastReviewed') : content.stringO}}
+        <h4 ng-if="reviewMode && !rs.get('action') && rs.get('status') !== 'insideAdded' && rs.get('status') !== 'insideRemoved'">Old Content:</h4>
+        <p ng-if="reviewMode && rs.get('status') !== 'insideAdded' && rs.get('status') !== 'insideRemoved'">{{!rs.get('action') ? rs.get('lastReviewed') : content.stringO}}
     </div>
     <div ng-if="t === 'checkbox'">
         <div>
             <br/>
-            <h4 ng-if="reviewMode && !objecttype && !rs.get('action') && !rs.get('section')">New Content:</h4>
+            <h4 ng-if="reviewMode && !objecttype && !rs.get('action') && rs.get('status') !== 'insideAdded' && rs.get('status') !== 'insideRemoved'">New Content:</h4>
             <div>
                     <span ng-repeat="checkbox in checkboxes" ng-if="!reviewMode || !rs.get('action')">
                       <input
@@ -70,7 +70,7 @@
             </div>
         </div>
 
-        <div ng-class="{'left-float': rs.get('mutation_effect')}" ng-if="reviewMode && !rs.get('section')">
+        <div ng-class="{'left-float': rs.get('mutation_effect')}" ng-if="reviewMode && rs.get('status') !== 'insideAdded' && rs.get('status') !== 'insideRemoved'">
             <h4 ng-if="!objecttype && !rs.get('action')">Old Content:</h4>
             <div>
                 <span ng-if="!objecttype" ng-repeat="checkbox in checkboxes" class="reviewedBG">
