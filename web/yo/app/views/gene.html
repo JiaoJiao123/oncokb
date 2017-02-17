@@ -155,8 +155,8 @@
               </span>
               <span class="pull-right" ng-if="reviewMode && mutation.name_review.get('status') === 'added'">
                     <p style="float:left;font-size:15px;color:red">Added by {{mutation.name_review.get('updatedBy')}} at {{mutation.name_review.get('updateTime')}}</p>
-                    <i class="fa fa-check fa-margin" ng-class="iconClass('accept', mutation.name_review)"  ng-click="confirmAdd($event, 'mutation', mutation, $index)"></i>
-                    <i class="fa fa-times fa-margin" ng-class="iconClass('reject', mutation.name_review)"  ng-click="cancelAdd($event, 'mutation', mutation, $index)"></i>
+                    <i class="fa fa-check fa-margin" ng-class="iconClass('accept', mutation.name_review)"  ng-click="confirmAdd(mutation.name.text)"></i>
+                    <i class="fa fa-times fa-margin" ng-class="iconClass('reject', mutation.name_review)"  ng-click="cancelAdd(mutation.name.text, $index)"></i>
               </span>
           </uib-accordion-heading>
           <uib-accordion ng-if="geneStatus[$index].isOpen || (status.numAccordion < 100 && gene.mutations.length < 20) || (status.numAccordion < 200 && gene.mutations.length < 6)" close-others="false">
@@ -252,10 +252,10 @@
                     <i class="fa fa-check fa-margin" ng-class="iconClass('accept', mutation.name_review)"  ng-click="confirmDelete($event, 'tumor', tumor, $parent.$parent.$parent.$parent.$parent.$index, $index)"></i>
                     <i class="fa fa-times fa-margin" ng-class="iconClass('reject', mutation.name_review)"  ng-click="cancelDelete($event, 'tumor', tumor, $parent.$parent.$parent.$parent.$parent.$index, $index)"></i>
                 </span>
-                <span class="pull-right" ng-if="reviewMode && tumor.name_review.get('status') === 'added'">
+                <span class="pull-right" ng-if="reviewMode && mutation.name_review.get('status') !== 'added' && tumor.name_review.get('status') === 'added'">
                     <p style="float:left;font-size:15px;color:red">Added by {{tumor.name_review.get('updatedBy')}} at {{tumor.name_review.get('updateTime')}}</p>
-                    <i class="fa fa-check fa-margin" ng-class="iconClass('accept', mutation.name_review)"  ng-click="confirmAdd($event, 'tumor', tumor, $parent.$parent.$parent.$parent.$parent.$index, $index)"></i>
-                    <i class="fa fa-times fa-margin" ng-class="iconClass('reject', mutation.name_review)"  ng-click="cancelAdd($event, 'tumor', tumor, $parent.$parent.$parent.$parent.$parent.$index, $index)"></i>
+                    <i class="fa fa-check fa-margin" ng-class="iconClass('accept', mutation.name_review)"  ng-click="confirmAdd(tumor.name.text)"></i>
+                    <i class="fa fa-times fa-margin" ng-class="iconClass('reject', mutation.name_review)"  ng-click="cancelAdd(tumor.name.text, $parent.$parent.$parent.$parent.$parent.$index, $index)"></i>
                 </span>
                 </uib-accordion-heading>
                 <uib-accordion close-others="false" ng-if="geneStatus[$parent.$parent.$parent.$parent.$index][$index].isOpen">
@@ -411,10 +411,10 @@
                                 <i class="fa fa-check fa-margin" ng-class="iconClass('accept', mutation.name_review)" ng-click="confirmDelete($event, 'treatment', treatment, $parent.$parent.$parent.$parent.$parent.$parent.$parent.$parent.$parent.$parent.$parent.$parent.$parent.$parent.$parent.$parent.$index, $parent.$parent.$parent.$parent.$parent.$parent.$parent.$parent.$parent.$parent.$index, $parent.$parent.$parent.$parent.$parent.$parent.$index, $index)"></i>
                                 <i class="fa fa-times fa-margin" ng-class="iconClass('reject', mutation.name_review)" ng-click="cancelDelete($event, 'treatment', treatment, $parent.$parent.$parent.$parent.$parent.$parent.$parent.$parent.$parent.$parent.$parent.$parent.$parent.$parent.$parent.$parent.$index, $parent.$parent.$parent.$parent.$parent.$parent.$parent.$parent.$parent.$parent.$index, $parent.$parent.$parent.$parent.$parent.$parent.$index, $index)"></i>
                             </span>
-                            <span class="pull-right" ng-if="reviewMode && treatment.name_review.get('status') === 'added'">
+                            <span class="pull-right" ng-if="reviewMode && mutation.name_review.get('status') !== 'added'&& tumor.name_review.get('status') !== 'added' && treatment.name_review.get('status') === 'added'">
                                 <p style="float:left;font-size:15px;color:red">Added by {{treatment.name_review.get('updatedBy')}} at {{treatment.name_review.get('updateTime')}}</p>
-                                <i class="fa fa-check fa-margin" ng-class="iconClass('accept', mutation.name_review)" ng-click="confirmAdd($event, 'treatment', treatment, $parent.$parent.$parent.$parent.$parent.$parent.$parent.$parent.$parent.$parent.$parent.$parent.$parent.$parent.$parent.$parent.$index, $parent.$parent.$parent.$parent.$parent.$parent.$parent.$parent.$parent.$parent.$index, $parent.$parent.$parent.$parent.$parent.$parent.$index, $index)"></i>
-                                <i class="fa fa-times fa-margin" ng-class="iconClass('reject', mutation.name_review)" ng-click="cancelAdd($event, 'treatment', treatment, $parent.$parent.$parent.$parent.$parent.$parent.$parent.$parent.$parent.$parent.$parent.$parent.$parent.$parent.$parent.$parent.$index, $parent.$parent.$parent.$parent.$parent.$parent.$parent.$parent.$parent.$parent.$index, $parent.$parent.$parent.$parent.$parent.$parent.$index, $index)"></i>
+                                <i class="fa fa-check fa-margin" ng-class="iconClass('accept', mutation.name_review)" ng-click="confirmAdd(treatment.name.text)"></i>
+                                <i class="fa fa-times fa-margin" ng-class="iconClass('reject', mutation.name_review)" ng-click="cancelAdd(treatment.name.text, $parent.$parent.$parent.$parent.$parent.$parent.$parent.$parent.$parent.$parent.$parent.$parent.$parent.$parent.$parent.$parent.$index, $parent.$parent.$parent.$parent.$parent.$parent.$parent.$parent.$parent.$parent.$index, $parent.$parent.$parent.$parent.$parent.$parent.$index, $index)"></i>
                             </span>
                             </uib-accordion-heading>
                             <p ng-if="displayCheck(treatment.level_uuid, treatment.level_review, mutation.name_review, tumor.name_review, treatment.name_review, true)">
