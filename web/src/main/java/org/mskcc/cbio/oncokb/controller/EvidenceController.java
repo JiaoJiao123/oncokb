@@ -286,26 +286,27 @@ public class EvidenceController {
         }
         // save newly added evidence    
         if (evidences.isEmpty()) {
-            Evidence evidence = new Evidence(uuid, evidenceType, null, null, null, gene, null, description, additionalInfo, treatments, knownEffect, lastEdit, level, propagation, articles, nccnGuidelines, clinicalTrials);
             if(evidenceType.equals(EvidenceType.ONCOGENIC) && alterations.size() > 1) {
                 // save duplicated evidence record for string alteration oncogenic
+                List<Evidence> tempEvidences = new ArrayList<>();
                 for(Alteration alteration : alterations) {
-                    evidence.setAlterations(Collections.singleton(alteration));
+                    Evidence evidence = new Evidence(uuid, evidenceType, null, null, null, gene, Collections.singleton(alteration), description, additionalInfo, treatments, knownEffect, lastEdit, level, propagation, articles, nccnGuidelines, clinicalTrials);
+                    tempEvidences.add(evidence);
                     evidenceBo.save(evidence);
-                    evidences.add(evidence);
                 }
+                evidences.addAll(tempEvidences);
             } else if(!isCancerEvidence) {
-                evidence.setAlterations(alterations);
+                Evidence evidence = new Evidence(uuid, evidenceType, null, null, null, gene, alterations, description, additionalInfo, treatments, knownEffect, lastEdit, level, propagation, articles, nccnGuidelines, clinicalTrials);
                 evidenceBo.save(evidence);
                 evidences.add(evidence);
             } else {
+                List<Evidence> tempEvidences = new ArrayList<>();
                 for(int i = 0;i < cancerTypes.size();i++) {
-                    evidence.setAlterations(alterations);
-                    evidence.setCancerType(cancerTypes.get(i));
-                    evidence.setSubtype(subTypes.get(i));
+                    Evidence evidence = new Evidence(uuid, evidenceType, cancerTypes.get(i), subTypes.get(i), null, gene, alterations, description, additionalInfo, treatments, knownEffect, lastEdit, level, propagation, articles, nccnGuidelines, clinicalTrials);
+                    tempEvidences.add(evidence);
                     evidenceBo.save(evidence);
-                    evidences.add(evidence);
                 }
+                evidences.addAll(tempEvidences);
             }
         } else if(!isCancerEvidence){
             // For the evidences which tumor type infomation is not involved, update it directly
@@ -326,18 +327,18 @@ public class EvidenceController {
                 evidenceBo.update(evidence);
             }
         } else {
-            // create a new evidence based on input passed in, and gene and alterations information from the current evidences 
-            Evidence evidence = new Evidence(uuid, evidenceType, null, null, null, gene, alterations, description, additionalInfo, treatments, knownEffect, lastEdit, level, propagation, articles, nccnGuidelines, clinicalTrials);
             // remove all old evidences
             evidenceBo.deleteAll(evidences);
             evidences.removeAll(evidences);
+            List<Evidence> tempEvidences = new ArrayList<>();
             // insert cancer type information and save it
             for(int i = 0;i < cancerTypes.size();i++) {
-                    evidence.setCancerType(cancerTypes.get(i));
-                    evidence.setSubtype(subTypes.get(i));
-                    evidenceBo.save(evidence);
-                    evidences.add(evidence);
+                // create a new evidence based on input passed in, and gene and alterations information from the current evidences 
+                Evidence evidence = new Evidence(uuid, evidenceType, cancerTypes.get(i), subTypes.get(i), null, gene, alterations, description, additionalInfo, treatments, knownEffect, lastEdit, level, propagation, articles, nccnGuidelines, clinicalTrials);
+                evidenceBo.save(evidence);
+                tempEvidences.add(evidence);
             }
+            evidences.addAll(tempEvidences);
         }   
         return evidences;
     }

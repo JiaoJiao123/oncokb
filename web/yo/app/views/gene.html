@@ -11,7 +11,7 @@
       <span class="btn-group btn-group-sm pull-right" role="group">
         <button type="button" class="btn btn-default" ng-if="userRole === 8" ng-disabled="!fileEditable || !metaDocStatus.saved" ng-click="review()">{{reviewMode ? 'Review Complete' : 'Review'}}</button>
         <button type="button" class="btn btn-default" ng-if="developerCheck()" ng-click="exitReview()">Exit Review</button>
-        <button type="button" class="btn btn-default" ng-click="getData()">Gene</button>
+        <!--<button type="button" class="btn btn-default" ng-click="getData()">Gene</button>-->
         <button type="button" class="btn btn-default" ng-click="getAllCitations()">Citations</button>
         <button type="button" class="btn btn-default" ng-click="generatePDF()">Download PDF</button>
         <button type="button" class="btn btn-default" ng-click="status.hideAllEmpty=true">
@@ -52,7 +52,7 @@
       <div ng-if="reviewMode">
           <br/><br/>
           <p style="color:red;font-size:20px;"><b>You are currently in "Review" mode. Click the "Review Complete" button to exit.
-              <button type="button" class="btn btn-default" ng-click="acceptAllMyChanges()" ng-disabled="status.noChanges || status.savingAll">{{savingAll ? 'Saving ' : 'Accept All My Changes'}}<i ng-if="savingAll" class="fa fa-spinner fa-spin"></i></button>
+              <button type="button" class="btn btn-default" ng-click="acceptAllMyChanges()" ng-disabled="status.noChanges || status.savingAll">{{status.savingAll ? 'Saving ' : 'Accept All My Changes'}}<i ng-if="status.savingAll" class="fa fa-spinner fa-spin"></i></button>
           </b></p>
       </div>
 
@@ -143,7 +143,7 @@
               <i ng-click="remove($event, mutation)" class="fa fa-trash-o"></i>
             </span>
               <span class="pull-right" ng-if="reviewMode">
-                  <review-panel rt="'delete'" rs="mutation.name_review" tp="'mutation'" mt="mutation" confirm-delete="confirmDelete(event, type, mutation, tumor, ti, treatment)" cancel-delete="cancelDelete(event, type, mutation, tumor, treatment)"></review-panel>
+                  <review-panel rt="'delete'" rs="mutation.name_review" tp="'mutation'" mt="mutation" confirm-delete="confirmDelete(event, type, mutation, tumor, ti, treatment)" cancel-delete="cancelDelete(event, type, mutation, tumor, ti, treatment)"></review-panel>
               </span>
           </uib-accordion-heading>
           <uib-accordion ng-if="geneStatus[$index].isOpen || (status.numAccordion < 100 && gene.mutations.length < 20) || (status.numAccordion < 200 && gene.mutations.length < 6)" close-others="false">
@@ -229,7 +229,7 @@
                     <i ng-click="remove($event, tumor)" class="fa fa-trash-o pull-right"></i>
                   </span>
                     <span class="pull-right" ng-if="reviewMode">
-                        <review-panel rt="'delete'" rs="tumor.name_review" tp="'tumor'" mt="mutation" tm="tumor" confirm-delete="confirmDelete(event, type, mutation, tumor, ti, treatment)" cancel-delete="cancelDelete(event, type, mutation, tumor, treatment)"></review-panel>
+                        <review-panel rt="'delete'" rs="tumor.name_review" tp="'tumor'" mt="mutation" tm="tumor" confirm-delete="confirmDelete(event, type, mutation, tumor, ti, treatment)" cancel-delete="cancelDelete(event, type, mutation, tumor, ti, treatment)"></review-panel>
                     </span>
                 </uib-accordion-heading>
                 <uib-accordion close-others="false" ng-if="geneStatus[$parent.$parent.$parent.$parent.$index][$index].isOpen">
@@ -289,7 +289,7 @@
                     </p>
                     <p ng-if="displayCheck(tumor.nccn.disease_uuid, tumor.nccn.disease_review, mutation.name_review, tumor.name_review, null, true)">
                       <strong>{{::tumor.nccn.disease.display}}:</strong>
-                      <drive-realtime-string rs="tumor.nccn.disease_review" uuid="tumor.nccn.disease_uuid" es="tumor.nccn_eStatus" t="'select-chosen'" object="tumor.nccn.disease" o="nccnDiseaseTypes" chosenid="'CurationNCCNDropDown'"></drive-realtime-string>
+                      <drive-realtime-string rs="tumor.nccn.disease_review" uuid="tumor.nccn.disease_uuid" es="tumor.nccn_eStatus" fe="fileEditable" t="'select-chosen'" object="tumor.nccn.disease" o="nccnDiseaseTypes" chosenid="'CurationNCCNDropDown'"></drive-realtime-string>
                     </p>
                     <p ng-if="displayCheck(tumor.nccn.version_uuid, tumor.nccn.version_review, mutation.name_review, tumor.name_review, null, true)">
                       <strong>{{::tumor.nccn.version.display}}:</strong>
@@ -357,7 +357,7 @@
                               </span>
                               <review-panel rt="'update'" rs="treatment.name_review" tp="ti.name.getText()" mt="mutation" tm="tumor" TI="ti" tt="treatment" get-evidence="getEvidence(type, mutation, tumor, TI, treatment)" model-update="modelUpdate(type, mutation, tumor, ti, treatment)"></review-panel>
                             <span class="pull-right" ng-if="reviewMode">
-                                <review-panel rt="'delete'" rs="treatment.name_review" tp="'treatment'" mt="mutation" tm="tumor" ti="ti" tt="treatment" confirm-delete="confirmDelete(event, type, mutation, tumor, ti, treatment)" cancel-delete="cancelDelete(event, type, mutation, tumor, treatment)"></review-panel>
+                                <review-panel rt="'delete'" rs="treatment.name_review" tp="'treatment'" mt="mutation" tm="tumor" ti="ti" tt="treatment" confirm-delete="confirmDelete(event, type, mutation, tumor, ti, treatment)" cancel-delete="cancelDelete(event, type, mutation, tumor, ti, treatment)"></review-panel>
                             </span>
                             </uib-accordion-heading>
                             <p ng-if="displayCheck(treatment.level_uuid, treatment.level_review, mutation.name_review, tumor.name_review, treatment.name_review, true)">
