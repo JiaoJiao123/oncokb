@@ -153,7 +153,7 @@
                   <review-panel rt="'delete'" rs="mutation.name_review" tp="'mutation'" mt="mutation" confirm-delete="confirmDelete(event, type, mutation, tumor, ti, treatment)" cancel-delete="cancelDelete(event, type, mutation, tumor, ti, treatment)"></review-panel>
               </span>
               <span class="pull-right" ng-if="reviewMode && mutation.name_review.get('lastReviewed')">
-                  <review-panel rt="'update'" rs="mutation.name_review" tp="'mutation'" mt="mutation" get-evidence="getEvidence(type, mutation, tumor, TI, treatment)" model-update="modelUpdate(type, mutation, tumor, ti, treatment)"></review-panel>
+                  <review-panel rt="'update'" rs="mutation.name_review" tp="'MUTATION_NAME_CHANGE'" mt="mutation" get-evidence="getEvidence(type, mutation, tumor, TI, treatment)" model-update="modelUpdate(type, mutation, tumor, ti, treatment)"></review-panel>
               </span>
           </uib-accordion-heading>
           <uib-accordion ng-if="geneStatus[$index].isOpen || (status.numAccordion < 100 && gene.mutations.length < 20) || (status.numAccordion < 200 && gene.mutations.length < 6)" close-others="false">

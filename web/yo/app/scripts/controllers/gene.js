@@ -794,6 +794,18 @@ angular.module('oncokbApp')
                         dataUUID = tumor.trials_uuid.getText();
                     }
                     break;
+                case 'MUTATION_NAME_CHANGE':
+                    dataUUID = mutation.name_uuid.getText();
+                    data.evidenceType = null;
+                    break;
+                case 'TUMOR_NAME_CHANGE':
+                    dataUUID = tumor.name_uuid.getText();
+                    data.evidenceType = null;
+                    break;
+                case 'TREATMENT_NAME_CHANGE':
+                    dataUUID = treatment.name_uuid.getText();
+                    data.evidenceType = null;
+                    break;
                 default:
                     break;
                 }
