@@ -440,6 +440,9 @@ angular.module('oncokbApp')
                         tumorChanged = false;
                     }
                     setOriginalStatus([mutation.name_review]);
+                    if(needReview(mutation.name_uuid)) {
+                        mutation.name_review.set('review', true);
+                    }
                     if (mutationChanged) {
                         mutation.name_review.set('review', true);
                         $scope.geneStatus[i].isOpen = true;
@@ -1259,6 +1262,7 @@ angular.module('oncokbApp')
                 });
                 dlg.result.then(function(name) {
                     console.log('successfully updated tumor type');
+                    // write the old cancertype and subtypes to the review model
                 }, function() {
                     console.log('failed to updated tumor type');
                 });
