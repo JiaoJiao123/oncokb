@@ -103,7 +103,6 @@ public class EvidenceController {
     public
     @ResponseBody
     ResponseEntity updateEvidence(@ApiParam(value = "uuid", required = true) @PathVariable("uuid") String uuid,
-            @ApiParam(value = "specialChangeTypeType", required = true) @PathVariable("specialChangeType") String specialChangeType,
             @RequestBody Evidence queryEvidence) throws ParserConfigurationException {
 
         List<Evidence> updatedEvidences = updateEvidenceBasedOnUuid(uuid, queryEvidence, specialChangeType);
@@ -206,8 +205,13 @@ public class EvidenceController {
 
         return genes;
     }
-    
-    private List<Evidence> updateEvidenceBasedOnUuid(String uuid, Evidence queryEvidence, String specialChangeType) throws ParserConfigurationException {
+    private String specialTypeCheck(Evidence queryEvidence) {
+        if(queryEvidence.getAlterations() != null)return  "MUTATION_NAME_CHANGE";
+        if(queryEvidence.getCancerType() != null)return "TUMOR_NAME_CHANGE";
+        if(queryEvidence.getTreatments() != null)return "TREATMENT_NAME_CHANGE";   
+        return null;
+    }
+    private List<Evidence> updateEvidenceBasedOnUuid(String uuid, Evidence queryEvidence) throws ParserConfigurationException {
         EvidenceBo evidenceBo = ApplicationContextSingleton.getEvidenceBo();
         GeneBo geneBo = ApplicationContextSingleton.getGeneBo();
         Gene gene = geneBo.findGeneByHugoSymbol(queryEvidence.getGene().getHugoSymbol());
@@ -263,62 +267,65 @@ public class EvidenceController {
         // cancerTypes and subTypes are required to be the same length
         if(cancerTypes.size() != subTypes.size()) {
             return null;
-        }
-        
-        if(specialChangeType.equals("MUTATION_NAME_CHANGE")) {
-            Evidence tempEvidence = new Evidence(evidences.get(0));
-            if(tempEvidence.getEvidenceType().equals(EvidenceType.ONCOGENIC)) {
+        }        
+        if(evidenceType == null) {
+            String specialChangeType = specialTypeCheck(queryEvidence);
+            if(specialChangeType.equals("MUTATION_NAME_CHANGE")) {
+                Evidence tempEvidence = new Evidence(evidences.get(0));
+                if(tempEvidence.getEvidenceType().equals(EvidenceType.ONCOGENIC)) {
+                    evidenceBo.deleteAll(evidences);
+                    evidences.clear();
+                    for(Alteration alteration : alterations) {
+                        tempEvidence = new Evidence(tempEvidence);
+                        tempEvidence.setAlterations(Collections.singleton(alteration));
+                        evidenceBo.save(tempEvidence);
+                        evidences.add(tempEvidence);
+                    }
+                } else {
+                    for(Evidence evidence : evidences) {
+                        evidence.setAlterations(alterations);
+                        evidenceBo.update(evidence);
+                    }
+                }
+            } else if(specialChangeType.equals("TUMOR_NAME_CHANGE")) { 
+                Evidence tempEvidence = new Evidence(evidences.get(0));
                 evidenceBo.deleteAll(evidences);
                 evidences.clear();
-                for(Alteration alteration : alterations) {
+                for(int i = 0;i < cancerTypes.size();i++) {
                     tempEvidence = new Evidence(tempEvidence);
-                    tempEvidence.setAlterations(Collections.singleton(alteration));
+                    tempEvidence.setCancerType(cancerTypes.get(i));
+                    tempEvidence.setSubtype(subTypes.get(i));
                     evidenceBo.save(tempEvidence);
                     evidences.add(tempEvidence);
                 }
-            } else {
-                for(Evidence evidence : evidences) {
-                    evidence.setAlterations(alterations);
-                    evidenceBo.update(evidence);
-                }
-            }
-        } else if(specialChangeType.equals("TUMOR_NAME_CHANGE")) { 
-            Evidence tempEvidence = new Evidence(evidences.get(0));
-            evidenceBo.deleteAll(evidences);
-            evidences.clear();
-            for(int i = 0;i < cancerTypes.size();i++) {
-                tempEvidence = new Evidence(tempEvidence);
-                tempEvidence.setCancerType(cancerTypes.get(i));
-                tempEvidence.setSubtype(subTypes.get(i));
-                evidenceBo.save(tempEvidence);
-                evidences.add(tempEvidence);
-            }
-        } else if(specialChangeType.equals("TREATMENT_NAME_CHANGE")) {
-            DrugBo drugBo = ApplicationContextSingleton.getDrugBo();
-            TreatmentBo treatmentBo = ApplicationContextSingleton.getTreatmentBo();
-            Set<Treatment> treatments = queryEvidence.getTreatments();
-            for (Treatment treatment : treatments) {
-                Set<Drug> drugs = treatment.getDrugs();
-                if (drugs != null && !drugs.isEmpty()) {
-                    Set<Drug> drugsFromDB = new HashSet<>();
-                    for (Drug drug : drugs) {
-                        Drug tempDrug = drugBo.findDrugByName(drug.getDrugName());
-                        if (tempDrug == null) {
-                            drugBo.save(drug);
-                            drugsFromDB.add(drug);
-                        } else {
-                            drugsFromDB.add(tempDrug);
+            } else if(specialChangeType.equals("TREATMENT_NAME_CHANGE")) {
+                DrugBo drugBo = ApplicationContextSingleton.getDrugBo();
+                TreatmentBo treatmentBo = ApplicationContextSingleton.getTreatmentBo();
+                Set<Treatment> treatments = queryEvidence.getTreatments();
+                for (Treatment treatment : treatments) {
+                    Set<Drug> drugs = treatment.getDrugs();
+                    if (drugs != null && !drugs.isEmpty()) {
+                        Set<Drug> drugsFromDB = new HashSet<>();
+                        for (Drug drug : drugs) {
+                            Drug tempDrug = drugBo.findDrugByName(drug.getDrugName());
+                            if (tempDrug == null) {
+                                drugBo.save(drug);
+                                drugsFromDB.add(drug);
+                            } else {
+                                drugsFromDB.add(tempDrug);
+                            }
                         }
+                        treatment.setDrugs(drugsFromDB);
                     }
-                    treatment.setDrugs(drugsFromDB);
-                }
-                treatmentBo.saveOrUpdate(treatment);
-                for(Evidence evidence : evidences) {
-                    evidence.setTreatments(treatments);
-                    evidenceBo.update(evidence);
+                    treatmentBo.saveOrUpdate(treatment);
+                    for(Evidence evidence : evidences) {
+                        evidence.setTreatments(treatments);
+                        evidenceBo.update(evidence);
+                    }
                 }
             }
-        } else {
+        }
+         else {
             EvidenceUtils.annotateEvidence(queryEvidence);
             
             String knownEffect = queryEvidence.getKnownEffect();
