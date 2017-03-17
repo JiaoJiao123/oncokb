@@ -803,7 +803,6 @@ angular.module('oncokbApp')
                     data.evidenceType = null;
                     break;
                 case 'TREATMENT_NAME_CHANGE':
-                    dataUUID = treatment.name_uuid.getText();
                     data.evidenceType = null;
                     break;
                 default:
@@ -964,6 +963,15 @@ angular.module('oncokbApp')
                     break;
                 case 'CLINICAL_TRIAL':
                     acceptItem([{reviewObj: tumor.trials_review, uuid: tumor.trials_uuid}], tumor.trials_review);
+                    break;
+                case 'MUTATION_NAME_CHANGE':
+                    acceptItem([{reviewObj: mutation.name_review, uuid: mutation.name_uuid}], mutation.name_review);
+                    break;
+                case 'TUMOR_NAME_CHANGE':
+                    acceptItem([{reviewObj: tumor.name_review, uuid: tumor.name_uuid}], tumor.name_review);
+                    break;
+                case 'TREATMENT_NAME_CHANGE':
+                    acceptItem([{reviewObj: treatment.name_review, uuid: treatment.name_uuid}], treatment.name_review);
                     break;
                 default:
                     break;
@@ -1268,7 +1276,9 @@ angular.module('oncokbApp')
                 var dlg = dialogs.create('views/modifyTumorTypes.html', 'ModifyTumorTypeCtrl', {
                     model: $scope.realtimeDocument.getModel(),
                     cancerTypes: tumorType.cancerTypes,
-                    oncoTree: $scope.oncoTree
+                    oncoTree: $scope.oncoTree,
+                    cancerTypes_review: tumorType.cancerTypes_review,
+                    cancerTypes_uuid: tumorType.name_uuid
                 }, {
                     size: 'lg'
                 });
@@ -2919,12 +2929,14 @@ angular.module('oncokbApp')
             };
         }]
     )
-    .controller('ModifyTumorTypeCtrl', function($scope, $modalInstance, data, _, OncoKB) {
+    .controller('ModifyTumorTypeCtrl', function($scope, $modalInstance, data, _, OncoKB, $rootScope) {
         $scope.meta = {
             model: data.model,
             oncoTree: data.oncoTree,
             cancerTypes: data.cancerTypes,
-            newCancerTypes: []
+            newCancerTypes: [],
+            cancerTypes_review: data.cancerTypes_review,
+            cancerTypes_uuid: data.cancerTypes_uuid
         };
 
         $scope.cancel = function() {
@@ -2933,7 +2945,14 @@ angular.module('oncokbApp')
 
         $scope.save = function() {
             $scope.meta.model.beginCompoundOperation();
-
+            var lastReviewed = [];
+            for(var i = 0;i < $scope.meta.cancerTypes.length;i++) {
+                var item = $scope.meta.cancerTypes.get(i);
+                lastReviewed.push({cancerType: item.cancerType.getText(), subtype: item.subtype.getText()});
+            }
+            if ($scope.meta.cancerTypes_review && _.isNull($scope.meta.cancerTypes_review.get('lastReviewed'))) {
+                $scope.meta.cancerTypes_review.set('lastReviewed', lastReviewed);
+            }
             $scope.meta.cancerTypes.clear();
             _.each($scope.meta.newCancerTypes, function(ct) {
                 if (ct.mainType.name) {
@@ -2956,8 +2975,16 @@ angular.module('oncokbApp')
             });
 
             $scope.meta.model.endCompoundOperation();
-
             $modalInstance.close();
+
+            var uuid = $scope.meta.cancerTypes_uuid.getText();
+            if ($rootScope.reviewMeta.get(uuid)) {
+                $rootScope.reviewMeta.get(uuid).set('review', true);
+            } else {
+                var temp = $rootScope.metaModel.createMap();
+                temp.set('review', true);
+                $rootScope.reviewMeta.set(uuid, temp);
+            }
         }; // end save
 
         $scope.$watch('meta.newCancerTypes', function(n) {

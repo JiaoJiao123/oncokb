@@ -89,56 +89,56 @@ angular.module('oncokbApp')
                     var extraDataUUID = evidenceResult[2];
                     var extraData = evidenceResult[3];
 
-                    if ($scope.tp === 'GENE_TYPE') {
-                        var params = {
-                            hugoSymbol: $scope.obj.name.getText(),
-                            oncogene: $scope.obj.type.get('OCG').trim().length > 0,
-                            tsg: $scope.obj.type.get('TSG').trim().length > 0
-                        };
-                        if ($rootScope.isDesiredGene) {
-                            $scope.loading = true;
-                            DatabaseConnector.updateGeneType($scope.obj.name.getText(), params, function(result) {
-                                $scope.modelUpdate($scope.tp, $scope.mt, $scope.tm, $scope.ti, $scope.tt);
-                                $scope.loading = false;
-                                $scope.rs.set('action', 'accepted');
-                            }, function(error) {
-                                console.log('fail to update to database', error);
-                                dialogs.error('Error', 'Failed to update to database! Please contact the developer.');
-                                $scope.loading = false;
-                            });
-                        } else {
-                            $scope.modelUpdate($scope.tp, $scope.mt, $scope.tm, $scope.ti, $scope.tt);
-                            $scope.rs.set('action', 'accepted');
-                        }
-                    } else if (dataUUID.length > 0) {
-                        if ($rootScope.isDesiredGene) {
-                            $scope.loading = true;
-                            DatabaseConnector.updateEvidence(dataUUID, data, function(result) {
-                                if (extraDataUUID.length > 0) {
-                                    DatabaseConnector.updateEvidence(extraDataUUID, extraData, function(result) {
-                                        $scope.modelUpdate($scope.tp, $scope.mt, $scope.tm, $scope.ti, $scope.tt);
-                                        $scope.loading = false;
-                                        $scope.rs.set('action', 'accepted');
-                                    }, function(error) {
-                                        console.log('fail to update to database', error);
-                                        dialogs.error('Error', 'Failed to update to database! Please contact the developer.');
-                                        $scope.loading = false;
-                                    });
-                                } else {
-                                    $scope.modelUpdate($scope.tp, $scope.mt, $scope.tm, $scope.ti, $scope.tt);
-                                    $scope.loading = false;
-                                    $scope.rs.set('action', 'accepted');
-                                }
-                            }, function(error) {
-                                console.log('fail to update to database', error);
-                                dialogs.error('Error', 'Failed to update to database! Please contact the developer.');
-                                $scope.loading = false;
-                            });
-                        } else {
-                            $scope.modelUpdate($scope.tp, $scope.mt, $scope.tm, $scope.ti, $scope.tt);
-                            $scope.rs.set('action', 'accepted');
-                        }
-                    }
+                    //if ($scope.tp === 'GENE_TYPE') {
+                    //    var params = {
+                    //        hugoSymbol: $scope.obj.name.getText(),
+                    //        oncogene: $scope.obj.type.get('OCG').trim().length > 0,
+                    //        tsg: $scope.obj.type.get('TSG').trim().length > 0
+                    //    };
+                    //    if ($rootScope.isDesiredGene) {
+                    //        $scope.loading = true;
+                    //        DatabaseConnector.updateGeneType($scope.obj.name.getText(), params, function(result) {
+                    //            $scope.modelUpdate($scope.tp, $scope.mt, $scope.tm, $scope.ti, $scope.tt);
+                    //            $scope.loading = false;
+                    //            $scope.rs.set('action', 'accepted');
+                    //        }, function(error) {
+                    //            console.log('fail to update to database', error);
+                    //            dialogs.error('Error', 'Failed to update to database! Please contact the developer.');
+                    //            $scope.loading = false;
+                    //        });
+                    //    } else {
+                    //        $scope.modelUpdate($scope.tp, $scope.mt, $scope.tm, $scope.ti, $scope.tt);
+                    //        $scope.rs.set('action', 'accepted');
+                    //    }
+                    //} else if (dataUUID.length > 0) {
+                    //    if ($rootScope.isDesiredGene) {
+                    //        $scope.loading = true;
+                    //        DatabaseConnector.updateEvidence(dataUUID, data, function(result) {
+                    //            if (extraDataUUID.length > 0) {
+                    //                DatabaseConnector.updateEvidence(extraDataUUID, extraData, function(result) {
+                    //                    $scope.modelUpdate($scope.tp, $scope.mt, $scope.tm, $scope.ti, $scope.tt);
+                    //                    $scope.loading = false;
+                    //                    $scope.rs.set('action', 'accepted');
+                    //                }, function(error) {
+                    //                    console.log('fail to update to database', error);
+                    //                    dialogs.error('Error', 'Failed to update to database! Please contact the developer.');
+                    //                    $scope.loading = false;
+                    //                });
+                    //            } else {
+                    //                $scope.modelUpdate($scope.tp, $scope.mt, $scope.tm, $scope.ti, $scope.tt);
+                    //                $scope.loading = false;
+                    //                $scope.rs.set('action', 'accepted');
+                    //            }
+                    //        }, function(error) {
+                    //            console.log('fail to update to database', error);
+                    //            dialogs.error('Error', 'Failed to update to database! Please contact the developer.');
+                    //            $scope.loading = false;
+                    //        });
+                    //    } else {
+                    //        $scope.modelUpdate($scope.tp, $scope.mt, $scope.tm, $scope.ti, $scope.tt);
+                    //        $scope.rs.set('action', 'accepted');
+                    //    }
+                    //}
                 };
                 function rejectItem(arr) {
                     _.each(arr, function(item) {

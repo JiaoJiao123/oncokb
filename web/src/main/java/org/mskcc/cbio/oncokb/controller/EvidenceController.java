@@ -105,7 +105,7 @@ public class EvidenceController {
     ResponseEntity updateEvidence(@ApiParam(value = "uuid", required = true) @PathVariable("uuid") String uuid,
             @RequestBody Evidence queryEvidence) throws ParserConfigurationException {
 
-        List<Evidence> updatedEvidences = updateEvidenceBasedOnUuid(uuid, queryEvidence, specialChangeType);
+        List<Evidence> updatedEvidences = updateEvidenceBasedOnUuid(uuid, queryEvidence);
 
         if (updatedEvidences != null) {
             updateCacheBasedOnEvidences(new HashSet<>(updatedEvidences));

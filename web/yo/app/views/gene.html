@@ -153,7 +153,7 @@
                   <review-panel rt="'delete'" rs="mutation.name_review" tp="'mutation'" mt="mutation" confirm-delete="confirmDelete(event, type, mutation, tumor, ti, treatment)" cancel-delete="cancelDelete(event, type, mutation, tumor, ti, treatment)"></review-panel>
               </span>
               <span class="pull-right" ng-if="reviewMode && mutation.name_review.get('lastReviewed')">
-                  <review-panel rt="'update'" rs="mutation.name_review" tp="'MUTATION_NAME_CHANGE'" mt="mutation" get-evidence="getEvidence(type, mutation, tumor, TI, treatment)" model-update="modelUpdate(type, mutation, tumor, ti, treatment)"></review-panel>
+                  <review-panel rt="'name'" rs="mutation.name_review" tp="'MUTATION_NAME_CHANGE'" mt="mutation" get-evidence="getEvidence(type, mutation, tumor, TI, treatment)" model-update="modelUpdate(type, mutation, tumor, ti, treatment)"></review-panel>
               </span>
           </uib-accordion-heading>
           <uib-accordion ng-if="geneStatus[$index].isOpen || (status.numAccordion < 100 && gene.mutations.length < 20) || (status.numAccordion < 200 && gene.mutations.length < 6)" close-others="false">
@@ -240,6 +240,9 @@
                   </span>
                     <span class="pull-right" ng-if="reviewMode">
                         <review-panel rt="'delete'" rs="tumor.name_review" tp="'tumor'" mt="mutation" tm="tumor" confirm-delete="confirmDelete(event, type, mutation, tumor, ti, treatment)" cancel-delete="cancelDelete(event, type, mutation, tumor, ti, treatment)"></review-panel>
+                    </span>
+                    <span class="pull-right" ng-if="tumor.name_review.get('lastReviewed') !== null">
+                        <review-panel rt="'name'" rs="tumor.name_review" tp="'TUMOR_NAME_CHANGE'" tm="tumor" get-evidence="getEvidence(type, mutation, tumor, TI, treatment)" model-update="modelUpdate(type, mutation, tumor, ti, treatment)"></review-panel>
                     </span>
                 </uib-accordion-heading>
                 <uib-accordion close-others="false" ng-if="geneStatus[$parent.$parent.$parent.$parent.$index][$index].isOpen">
@@ -352,7 +355,6 @@
                             <uib-accordion-heading>
                               <i class="fa  " ng-class="{'fa-chevron-down': geneStatus[$parent.$parent.$parent.$parent.$parent.$parent.$parent.$parent.$parent.$parent.$parent.$parent.$parent.$parent.$parent.$parent.$index][$parent.$parent.$parent.$parent.$parent.$parent.$parent.$parent.$parent.$parent.$index][$parent.$parent.$parent.$parent.$parent.$parent.$index][$index].isOpen, 'fa-chevron-right': !geneStatusgeneStatus[$parent.$parent.$parent.$parent.$parent.$parent.$parent.$parent.$parent.$parent.$parent.$parent.$parent.$parent.$parent.$parent.$index][$parent.$parent.$parent.$parent.$parent.$parent.$parent.$parent.$parent.$parent.$index][$parent.$parent.$parent.$parent.$parent.$parent.$index][$index].isOpen}"></i>
                               <span>{{treatment.type.text}}: </span>
-                                <p>{{treatment.name_review.get('lastReviewed') + " " + treatment.name_review.get('updatedBy') + " " + treatment.name_review.get('updateTime')}}</p>
                               <div ng-if="reviewMode && treatment.name_review.get('lastReviewed')"><br/></div>
                               <div style="display:inline-block">
                                    <drive-realtime-string rs="treatment.name_review" uuid="treatment.name_uuid"  es="treatment.name_eStatus" fe="fileEditable" t="'name'" object="treatment.name" ng-click="stopCollopse($event)"></drive-realtime-string>
@@ -370,9 +372,14 @@
                                  <e-status ng-if="userRole === 8"  ng-click="commentClick($event)" ng-keypress="stopCollopse($event)" object="treatment.name_eStatus" id="mutation.name.text + tumor.name.text + ti.name.text + treatment.text" apply-obsolete="applyObsolete(treatment.name_eStatus, 'treatment', mutation, tumor, ti, treatment)"></e-status>
                                 <i ng-click="remove($event, treatment)" class="fa fa-trash-o"></i>
                               </span>
-                              <review-panel rt="'update'" rs="treatment.name_review" tp="ti.name.getText()" mt="mutation" tm="tumor" TI="ti" tt="treatment" get-evidence="getEvidence(type, mutation, tumor, TI, treatment)" model-update="modelUpdate(type, mutation, tumor, ti, treatment)"></review-panel>
+                              <div ng-if="treatment.name_review.get('lastReviewed') === null">
+                                  <review-panel rt="'update'" rs="treatment.name_review" tp="ti.name.getText()" mt="mutation" tm="tumor" TI="ti" tt="treatment" get-evidence="getEvidence(type, mutation, tumor, TI, treatment)" model-update="modelUpdate(type, mutation, tumor, ti, treatment)"></review-panel>
+                              </div>
                             <span class="pull-right" ng-if="reviewMode">
                                 <review-panel rt="'delete'" rs="treatment.name_review" tp="'treatment'" mt="mutation" tm="tumor" ti="ti" tt="treatment" confirm-delete="confirmDelete(event, type, mutation, tumor, ti, treatment)" cancel-delete="cancelDelete(event, type, mutation, tumor, ti, treatment)"></review-panel>
+                            </span>
+                            <span class="pull-right" ng-if="treatment.name_review.get('lastReviewed') !== null">
+                                <review-panel rt="'name'" rs="treatment.name_review" tp="'TREATMENT_NAME_CHANGE'" ti="ti" tt="treatment" get-evidence="getEvidence(type, mutation, tumor, TI, treatment)" model-update="modelUpdate(type, mutation, tumor, ti, treatment)"></review-panel>
                             </span>
                             </uib-accordion-heading>
                             <p ng-if="displayCheck(treatment.level_uuid, treatment.level_review, mutation.name_review, tumor.name_review, treatment.name_review, true)">
