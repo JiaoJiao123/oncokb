@@ -18,17 +18,29 @@ angular.module('oncokbApp')
             backupIndex: -1,
             migrateIndex: -1
         };
+        self.backupFolderName = '';
 
-        function backup(callback) {
+        function backup(backupFolderName, callback) {
+            if (backupFolderName) {
+                self.backupFolderName = backupFolderName;
+            }
             backupMeta(callback);
         }
+
+        function getBackupFolderName() {
+            if (!self.backupFolderName) {
+                self.backupFolderName = (new Date()).toString();
+            }
+            return self.backupFolderName;
+        }
+
         function backupGene(callback) {
             if (self.parentFolder) {
                 if (!angular.isFunction(callback)) {
                     callback = undefined;
                 }
 
-                createFolder().then(function(result) {
+                createFolder(getBackupFolderName()).then(function(result) {
                     if (result && result.error) {
                         console.error('Create folder failed.', result);
                         if (callback) {
@@ -48,7 +60,7 @@ angular.module('oncokbApp')
         function backupMeta(callback) {
             storage.requireAuth(true).then(function() {
                 // create Meta folder
-                storage.createFolder(self.parentFolder, 'Meta ' + (new Date()).toString()).then(function(folderResult) {
+                storage.createFolder(self.parentFolder, 'Meta for ' + getBackupFolderName()).then(function(folderResult) {
                     // create Meta document inside the new Meta folder
                     storage.createDocument('Meta Status', folderResult.id).then(function(file) {
                         console.log('Created meta file');
@@ -97,12 +109,12 @@ angular.module('oncokbApp')
             });
         };
 
-        function createFolder() {
+        function createFolder(folderName) {
             var deferred = $q.defer();
 
             storage.requireAuth(true).then(function(result) {
                 if (result && !result.error) {
-                    storage.createFolder(self.parentFolder).then(function(result) {
+                    storage.createFolder(self.parentFolder, folderName).then(function(result) {
                         if (result.id) {
                             self.newFolder = result.id;
                             deferred.resolve(result);
