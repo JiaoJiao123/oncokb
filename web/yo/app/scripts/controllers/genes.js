@@ -103,6 +103,7 @@ angular.module('oncokbApp')
                                                     dialogs.error('Error', 'Fail to get meta document! Please stop editing and contact the developer!');
                                                 } else {
                                                     var metaData = metaRealtime.getModel().getRoot().get('review');
+                                                    $scope.allMetaData = metaData;
                                                     var genes = metaData.keys();
                                                     for (var i = 0; i < genes.length; i++) {
                                                         var geneMetaData = metaData.get(genes[i]);
@@ -489,6 +490,189 @@ angular.module('oncokbApp')
                     }
                 }
                 return result;
+            }
+            $scope.getReviewChanges = function() {
+                var genes = [];
+                for(var i = 0;i < $scope.documents.length;i++) {
+                    genes.push($scope.documents[i].title);
+                }
+                console.log(genes);
+                // console.log('Updated By', ';', 'Update Time', ';', 'Gene', ';', 'Mutation(or other changes)', ';', 'Tumor(or other changes)', ';', 'Implication(ot other changes)', ';', 'Therapy(or other changes)');
+                // getReviewChangesByGene(0);
+            };
+            function needReview(uuid) {
+                if(uuid) {
+                    uuid = uuid.getText();
+                    if ($scope.metaDataByGene.get(uuid) && $scope.metaDataByGene.get(uuid).get('review')) {
+                        return true;
+                    }
+                }
+                return false;
+            }
+            function getUpdatedSignature(tempArr) {
+                var mostRecent = mostRecentItem(tempArr);
+                return {
+                    updatedBy: tempArr[mostRecent].get('updatedBy'),
+                    updateTime: tempArr[mostRecent].get('updateTime')
+                };
+            }
+            function mostRecentItem(reviewObjs) {
+                var mostRecent = -1;
+                for (var i = 0; i < reviewObjs.length; i++) {
+                    if (mostRecent < 0) {
+                        if (reviewObjs[i].get('updateTime')) {
+                            mostRecent = i;
+                        }
+                    } else if (Date.parse(reviewObjs[mostRecent].get('updateTime')) < Date.parse(reviewObjs[i].get('updateTime'))) {
+                        mostRecent = i;
+                    }
+                }
+                if (mostRecent < 0) {
+                    return 0;
+                }
+                return mostRecent;
+            }
+            function getCancerTypesName(cancerTypes) {
+                var list = [];
+                cancerTypes.asArray().forEach(function(cancerType) {
+                    if (cancerType.subtype.length > 0) {
+                        var str = cancerType.subtype.getText();
+                        // if (cancerType.oncoTreeCode.length > 0) {
+                        //     str += '(' + cancerType.oncoTreeCode + ')';
+                        // }
+                        list.push(str);
+                    } else if (cancerType.cancerType.length > 0) {
+                        list.push(cancerType.cancerType.getText());
+                    }
+                });
+                return list.join(', ');
+            };
+            function isObsoleted(object, key) {
+                // set default key to be name
+                if(!key)key = 'name';
+                return object && object[key+'_eStatus'] && object[key+'_eStatus'].get('obsolete') === 'true';
+            }
+            function getReviewChangesByGene(index) {
+                if (index < $scope.documents.length) {
+                    var document = $scope.documents[index];
+                    if(!$scope.metaFlags[document.title]) {
+                        $timeout(function() {
+                            getReviewChangesByGene(++index);
+                        }, 1000, false);
+                    } else {
+                        storage.getRealtimeDocument(document.id).then(function(realtime) {
+                            if (realtime && realtime.error) {
+                                console.log('did not get realtime document', document.title);
+                                $timeout(function() {
+                                    getReviewChangesByGene(++index);
+                                }, 1000, false);
+                            } else {
+                                var model = realtime.getModel();
+                                var gene = model.getRoot().get('gene');
+                                if (gene) {
+                                    $scope.metaDataByGene = $scope.allMetaData.get(gene.name.getText());
+                                    if (needReview(gene.summary_uuid)) {
+                                        console.log(gene.summary_review.get('updatedBy'), ';', gene.summary_review.get('updateTime'), ';', gene.name.getText(), ';', 'Gene Summary');
+                                    }
+                                    if (needReview(gene.type_uuid)) {
+                                        console.log(gene.type_review.get('updatedBy'), ';', gene.type_review.get('updateTime'), ';', gene.name.getText(), ';', 'Gene Type');
+                                    }
+                                    if (needReview(gene.background_uuid)) {
+                                        console.log(gene.background_review.get('updatedBy'), ';', gene.background_review.get('updateTime'), ';', gene.name.getText(), ';', 'Gene Background');
+                                    }
+                                    var tempArr = [];
+                                    for (var i = 0; i < gene.mutations.length; i++) {
+                                        var mutation = gene.mutations.get(i);
+                                        if(isObsoleted(mutation)) {
+                                            continue;
+                                        }
+                                        if (mutation.name_review.get('removed')) {
+                                            console.log(mutation.name_review.get('updatedBy'), ';', mutation.name_review.get('updateTime'), ';', gene.name.getText(), ';', mutation.name.getText(), ';', 'Deleted');
+                                            continue;
+                                        }
+                                        tempArr = [mutation.oncogenic_review, mutation.shortSummary_review, mutation.summary_review];
+                                        if (needReview(mutation.shortSummary_uuid) || needReview(mutation.summary_uuid) || needReview(mutation.oncogenic_uuid)) {
+                                            var reviewSignature = getUpdatedSignature(tempArr);
+                                            console.log(reviewSignature.updatedBy, ';', reviewSignature.updateTime, ';', gene.name.getText(), ';', mutation.name.getText(), ';', 'Oncogenic');
+                                        }
+                                        tempArr = [mutation.effect_review, mutation.description_review];
+                                        if (needReview(mutation.description_uuid) || needReview(mutation.effect_uuid)) {
+                                            var reviewSignature = getUpdatedSignature(tempArr);
+                                            console.log(reviewSignature.updatedBy, ';', reviewSignature.updateTime, ';', gene.name.getText(), ';', mutation.name.getText(), ';', 'Mutation Effect');
+                                        }
+                                        for (var j = 0; j < mutation.tumors.length; j++) {
+                                            var tumor = mutation.tumors.get(j);
+                                            if(isObsoleted(tumor)) {
+                                                continue;
+                                            }
+                                            if (tumor.name_review.get('removed')) {
+                                                console.log(tumor.name_review.get('updatedBy'), ';', tumor.name_review.get('updateTime'), ';', gene.name.getText(), ';', mutation.name.getText(), ';', getCancerTypesName(tumor.cancerTypes), ';', 'Deleted');
+                                                continue;
+                                            }
+                                            if(needReview(tumor.name_uuid)) {
+                                                console.log(tumor.name_review.get('updatedBy'), ';', tumor.name_review.get('updateTime'), ';', gene.name.getText(), ';', mutation.name.getText(), ';', getCancerTypesName(tumor.cancerTypes), ';', 'Tumor name');
+                                            }
+                                            if(needReview(tumor.summary_uuid)) {
+                                                console.log(tumor.summary_review.get('updatedBy'), ';', tumor.summary_review.get('updateTime'), ';', gene.name.getText(), ';', mutation.name.getText(), ';', getCancerTypesName(tumor.cancerTypes), ';', 'Tumor Summary');
+                                            }
+                                            tempArr = [tumor.prevalence_review];
+                                            if (needReview(tumor.prevalence_uuid)) {
+                                                var reviewSignature = getUpdatedSignature(tempArr);
+                                                console.log(reviewSignature.updatedBy, ';', reviewSignature.updateTime, ';', gene.name.getText(), ';', mutation.name.getText(), ';', getCancerTypesName(tumor.cancerTypes), ';', 'Prevalence');
+                                            }
+                                            tempArr = [tumor.progImp_review];
+                                            if (needReview(tumor.progImp_uuid)) {
+                                                var reviewSignature = getUpdatedSignature(tempArr);
+                                                console.log(reviewSignature.updatedBy, ';', reviewSignature.updateTime, ';', gene.name.getText(), ';', mutation.name.getText(), ';', getCancerTypesName(tumor.cancerTypes), ';', 'Prognostic Implication');
+                                            }
+                                            tempArr = [tumor.nccn.therapy_review, tumor.nccn.disease_review, tumor.nccn.version_review, tumor.nccn.description_review];
+                                            if (needReview(tumor.nccn.therapy_uuid) || needReview(tumor.nccn.disease_uuid) || needReview(tumor.nccn.version_uuid) || needReview(tumor.nccn.description_uuid)) {
+                                                var reviewSignature = getUpdatedSignature(tempArr);
+                                                console.log(reviewSignature.updatedBy, ';', reviewSignature.updateTime, ';', gene.name.getText(), ';', mutation.name.getText(), ';', getCancerTypesName(tumor.cancerTypes), ';', 'NCCN');
+                                            }
+                                            if(needReview(tumor.trials_uuid)) {
+                                                console.log(tumor.trials_review.get('updatedBy'), ';', tumor.trials_review.get('updateTime'), ';', gene.name.getText(), ';', mutation.name.getText(), ';', getCancerTypesName(tumor.cancerTypes), ';', 'Clinical Trials');
+                                            }
+                                            for (var k = 0; k < tumor.TI.length; k++) {
+                                                var ti = tumor.TI.get(k);
+                                                if(isObsoleted(ti)) {
+                                                    continue;
+                                                }
+                                                if (needReview(ti.description_uuid)) {
+                                                    console.log(ti.description_review.get('updatedBy'), ';', ti.description_review.get('updateTime'), ';', gene.name.getText(), ';', mutation.name.getText(), ';', getCancerTypesName(tumor.cancerTypes), ';', ti.name.getText(), ';', 'Description');
+                                                }
+                                                for (var m = 0; m < ti.treatments.length; m++) {
+                                                    var treatment = ti.treatments.get(m);
+                                                    if(isObsoleted(treatment)) {
+                                                        continue;
+                                                    }
+                                                    if (treatment.name_review.get('removed')) {
+                                                        console.log(mutation.name_review.get('updatedBy'), ';', mutation.name_review.get('updateTime'), ';', gene.name.getText(), ';', mutation.name.getText(), ';', getCancerTypesName(tumor.cancerTypes), ';', ti.name.getText(), ';', treatment.name.getText(), ';', 'Deleted');
+                                                        continue;
+                                                    }
+                                                    tempArr = [treatment.name_review, treatment.level_review, treatment.indication_review, treatment.description_review];
+                                                    if (needReview(treatment.name_uuid) || needReview(treatment.level_uuid) || needReview(treatment.indication_uuid) || needReview(treatment.description_uuid)) {
+                                                        var reviewSignature = getUpdatedSignature(tempArr);
+                                                        console.log(reviewSignature.updatedBy, ';', reviewSignature.updateTime, ';', gene.name.getText(), ';', mutation.name.getText(), ';', getCancerTypesName(tumor.cancerTypes), ';', ti.name.getText(), ';', treatment.name.getText());
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                    $timeout(function() {
+                                        getReviewChangesByGene(++index);
+                                    }, 1000, false);
+                                } else {
+                                    $timeout(function() {
+                                        getReviewChangesByGene(++index);
+                                    }, 1000, false);
+                                }
+                            }
+                        });
+                    }
+                } else {
+                    console.log('Finished scanning');
+                }
             }
 
             function convertMutationEffect(index, callback) {
