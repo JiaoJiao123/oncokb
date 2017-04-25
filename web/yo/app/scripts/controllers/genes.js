@@ -131,6 +131,30 @@ angular.module('oncokbApp')
                     });
                 }
             };
+            $scope.createQueueModel = function() {
+                assignModel(0);
+            };
+            function assignModel(index) {
+                if(index < $scope.documents.length) {
+                    console.log(index);
+                    var fileId = $scope.documents[index].id;
+                    storage.getRealtimeDocument(fileId).then(function(realtime) {
+                        if (realtime && realtime.error) {
+                            console.log('did not get realtime document.');
+                        } else {
+                            var model = realtime.getModel();
+                            var queueModel = model.createList();
+                            model.getRoot().set('queue', queueModel);
+                            $timeout(function() {
+                                assignModel(++index);
+                            }, 1000, false);
+                        }
+                    });
+                } else {
+                    console.log('Finished');
+                }
+
+            }
             function assignReviewColumn() {
                 var genes = $rootScope.metaData.keys();
                 for (var i = 0; i < genes.length; i++) {
