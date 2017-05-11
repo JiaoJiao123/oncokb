@@ -308,7 +308,7 @@ angular.module('oncokbApp')
                 }
 
                 $scope.prepareSendEmail = function() {
-                    $scope.emailReturnMessage = '';
+                    $scope.email.returnMessage = '';
                 };
                 $scope.toggleCompletedCuration = function() {
                     return function(item) {
