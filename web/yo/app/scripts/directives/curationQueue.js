@@ -307,8 +307,7 @@ angular.module('oncokbApp')
                     return deferred.promise;
                 }
 
-                $scope.markEmailSent = function() {
-                    $scope.emailSent = false;
+                $scope.prepareSendEmail = function() {
                     $scope.emailReturnMessage = '';
                 };
                 $scope.toggleCompletedCuration = function() {

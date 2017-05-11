@@ -108,20 +108,20 @@
                 <select chosen multiple
                         ng-model="curatorsToNotify"
                         ng-options="m for m in curatorNotificationList"
-                        ng-change="markEmailSent()"
+                        ng-change="prepareSendEmail()"
                         class="chosen-select">
                 </select>
             </div>
             <div class="col-sm-2">
                 <button tyle="button" class="btn btn-success"
-                        ng-disabled="!curatorsToNotify || curatorsToNotify.length === 0 || emailSent"
+                        ng-disabled="!curatorsToNotify || curatorsToNotify.length === 0 || email.status.sending"
                         ng-click="sendEmail(curatorsToNotify)">
                     <span ng-show="!email.status.sending">Notify</span>
                     <i ng-show="email.status.sending" class="fa fa-spinner fa-spin"></i>
                 </button>
             </div>
             <div class="col-sm-2">
-                <span ng-if="email.returnMessage">{{email.returnMessage}}</span>
+                <span ng-if="email.returnMessage"><b>{{email.returnMessage}}</b></span>
             </div>
         </div>
     </div>
