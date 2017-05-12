@@ -111,8 +111,8 @@
                         ng-change="prepareSendEmail()">
                 </select>
                 <button type="button" class="btn btn-sm btn-success"
-                        ng-disabled="!data.curatorsToNotify || data.curatorsToNotify.length === 0 || email.status.sending || email.returnMessage"
-                        ng-click="sendEmail(data.curatorsToNotify)">
+                        ng-disabled="!data.curatorsToNotify || data.curatorsToNotify.length === 0 || email.status.sending"
+                        ng-click="sendEmail()">
                     <span ng-show="!email.status.sending">Notify</span>
                     <i ng-show="email.status.sending" class="fa fa-spinner fa-spin"></i>
                 </button>
