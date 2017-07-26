@@ -875,7 +875,7 @@ angular.module('oncokbApp')
         function getHistoryData(history) {
             var result = {};
             _.each(history.keys(), function(key) {
-                result[key] = history.get(key);
+                result[key] = Array.from(history.get(key));
             });
             return result;
         }
