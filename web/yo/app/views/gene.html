@@ -541,12 +541,30 @@
   </div>
     <div ng-if="!reviewMode">
         <div class="input-group input-group-sm accordionMarginTop">
-            <input type="text" class="form-control" ng-model="newMutationName" placeholder="{{::addMutationPlaceholder}}"  uib-typeahead="suggestedMutation for suggestedMutation in suggestedMutations | filter:$viewValue:stateComparator" empty-typeahead  ng-click="opened=!opened" focus-me="opened" ng-focus="onFocus($event)" />
+            <input type="text" class="form-control" ng-model="newMutationName" placeholder="{{::addMutationPlaceholder}}"  uib-typeahead="suggestedMutation for suggestedMutation in suggestedMutations | filter:$viewValue:stateComparator" empty-typeahead  ng-click="opened=!opened" focus-me="opened" ng-focus="onFocus($event)" ng-change="updateMutationModel(newMutationName)"/>
             <span class="input-group-btn">
               <button type="button" class="btn btn-default" ng-disabled="!(!!newMutationName)" ng-click="addMutation(newMutationName); newMutationName=''">
                 <i class="fa fa-plus"></i> Add Mutation
               </button>
             </span>
+        </div>
+        <div ng-if="mutationModels.length > 0">
+            <table class="table" style="width:100%">
+                <tr>
+                    <th>Protein Change</th>
+                    <th>Name</th>
+                    <th>Start</th>
+                    <th>End</th>
+                    <th>Consequence</th>
+                </tr>
+                <tr ng-repeat="x in mutationModels">
+                    <td><input type="text" ng-model="x.proteinChange"/></td>
+                    <td><input type="text" ng-model="x.name"/></td>
+                    <td><input type="text" ng-model="x.start"/></td>
+                    <td><input type="text" ng-model="x.end"/></td>
+                    <td><input type="text" ng-model="x.consequence"/></td>
+                </tr>
+            </table>
         </div>
         <hr/>
         <div id="vus">

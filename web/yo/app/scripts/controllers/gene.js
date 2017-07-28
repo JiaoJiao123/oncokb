@@ -2042,6 +2042,71 @@ angular.module('oncokbApp')
                 });
             };
 
+            $scope.updateMutationModel = function(newMutationName) {
+                if (newMutationName) {
+                    newMutationName = newMutationName.replace(/\([^\)]+\)/g, '');
+                    var parts = newMutationName.split(',');
+                    var altResults = [];
+                    var proteinChange = '';
+                    var displayName = '';
+                    for (var i = 0; i < parts.length; i++) {
+                        if (!parts[i])continue;
+                        if (parts[i].indexOf('[') === -1) {
+                            proteinChange = parts[i];
+                            displayName = parts[i];
+                        } else {
+                            var l = parts[i].indexOf('[');
+                            var r = parts[i].indexOf(']');
+                            proteinChange = parts[i].substring(0, l);
+                            displayName = parts[i].substring(l + 1, r);
+                        }
+                        var tempRes = proteinChange.match(/([A-Z])([0-9]+)(.*)/i);
+                        var tempMutationModel = {
+                            name: displayName,
+                            proteinChange: proteinChange
+                        };
+                        if (tempRes && tempRes[2]) {
+                            tempMutationModel.start = tempRes[2];
+                            tempMutationModel.end = tempRes[2];
+                        }
+                        altResults.push(tempMutationModel);
+
+                        // if (proteinChange.indexOf('/') === -1) {
+                        //     altResults.push({
+                        //         alteration: proteinChange,
+                        //         name: displayName,
+                        //         gene: {
+                        //             hugoSymbol: $scope.gene.name.getText()
+                        //         }
+                        //     });
+                        // } else {
+                        //     var tempRes = proteinChange.match(/([A-Z][0-9]+)(.*)/i);
+                        //     var refs = tempRes[2].split('/');
+                        //     for (var j = 0; j < refs.length; j++) {
+                        //         altResults.push({
+                        //             alteration: tempRes[1] + refs[j],
+                        //             name: displayName,
+                        //             gene: {
+                        //                 hugoSymbol: $scope.gene.name.getText()
+                        //             }
+                        //         });
+                        //     }
+                        // }
+                    }
+
+
+                    // var test = newMutationName.split(',');
+                    // var tempMutationModels = [];
+                    // _.each(test, function(item) {
+                    //     tempMutationModels.push({
+                    //         name: item
+                    //     });
+                    // });
+                    $scope.mutationModels = altResults;
+                } else {
+                    $scope.mutationModels = [];
+                }
+            };
             // Add new therapeutic implication
             $scope.addTrial = function(trials, newTrial, trialsReview, trialsUuid) {
                 if (trials && newTrial) {

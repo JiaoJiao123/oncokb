@@ -45,6 +45,8 @@ angular.module('oncokbApp')
                     at = 'bottom right';
                 } else if (attrs.type === 'vusItem') {
                     content = '<span>Last edit: ' + new Date(scope.time).toLocaleDateString() + '</span><br/><span>By: ' + scope.by + '</span>';
+                } else if (attrs.type === 'hello') {
+                    content = '<table class="table"><tr><th>Protein Change</th><th>Name</th><th>Start</th><th>End</th><th>Consequence</th></tr><tr><td>V600E</td><td>V600E</td><td>600</td><td>600</td><td>Missense</td></tr></table>';
                 }
 
                 if (!attrs.type) {

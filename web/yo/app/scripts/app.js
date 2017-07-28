@@ -108,6 +108,28 @@ OncoKB.curateInfo = {
         },
         tumors: {
             type: 'list'
+        },
+        mutationModelKeys: {
+            type: 'list'
+        }
+    },
+    MutationModelPool: {
+        pool: {
+            type: 'map'
+        }
+    },
+    MutationMode: {
+        name: {
+            type: 'string'
+        },
+        range: {
+            type: 'string'
+        },
+        consequence: {
+            type: 'string'
+        },
+        proteinChange: {
+            type: 'string'
         }
     },
     Curator: {
