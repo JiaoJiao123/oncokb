@@ -11,7 +11,7 @@ angular.module('oncokbApp')
                  OncoKB, stringUtils, S, MainUtils, gapi, UUIDjs, dialogs) {
 
             $scope.generateFiles = function() {
-                var result = ['Gene', 'Mutation', 'Tumor', 'Tumor Type Summary', 'Obsoleted', 'Needs to be reviewed'];
+                var result = ['Gene', 'Mutation', 'Tumor', 'Therapy Category', 'Treatment', 'Obsoleted'];
                 console.log(result.join('$'));
                 generateFromSingleGene(0);
             };
@@ -25,33 +25,26 @@ angular.module('oncokbApp')
                             if (docIndex% 50 === 0) {
                                 console.log('*********************', docIndex);
                             }
-                            // console.log($scope.documents[docIndex].title, '\t\t', docIndex);
                             var gene = realtime.getModel().getRoot().get('gene');
                             if (gene) {
                                 _.each(gene.mutations.asArray(), function(mutation) {
                                     var mutationName = mutation.name.text;
                                     _.each(mutation.tumors.asArray(), function(tumor) {
                                         var tumorName = MainUtils.getCancerTypesName(tumor.cancerTypes);
-                                        var tumorSummary = tumor.summary.text;
-                                        if (tumorSummary) {
-                                            var result = [gene.name.text, mutationName, tumorName, tumorSummary];
-                                            if (tumor.name_eStatus.get('obsolete') === true) {
-                                                result.push('Yes');
-                                            } else {
-                                                result.push('No');
-                                            }
-                                            if (tumor.summary_review.get('lastReviewed')) {
-                                                result.push('Yes');
-                                            } else {
-                                                result.push('No');
-                                            }
-                                            console.log(result.join('$'));
-                                        }
-                                        // _.each(tumor.TI.asArray(), function(ti) {
-                                        //     _.each(ti.treatments.asArray(), function(treatment) {
-                                        //         console.log(treatment.level.getText());
-                                        //     });
-                                        // });
+                                        _.each(tumor.TI.asArray(), function(ti) {
+                                            _.each(ti.treatments.asArray(), function(treatment) {
+                                                if (treatment.level.getText() === '4') {
+                                                    var result = [gene.name.text, mutationName, tumorName, ti.name.getText(), treatment.name.text];
+                                                    if (mutation.name_eStatus.get('obsolete') === 'true' || tumor.name_eStatus.get('obsolete') === 'true' ||
+                                                        ti.name_eStatus.get('obsolete') === 'true' || treatment.name_eStatus.get('obsolete') === 'true') {
+                                                        result.push('Yes');
+                                                    } else {
+                                                        result.push('No');
+                                                    }
+                                                    console.log(result.join('$'));
+                                                }
+                                            });
+                                        });
                                     });
                                 });
                             } else {
