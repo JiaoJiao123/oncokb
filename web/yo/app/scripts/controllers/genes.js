@@ -9,6 +9,1218 @@ angular.module('oncokbApp')
                  config, importer, storage, Documents, users,
                  DTColumnDefBuilder, DTOptionsBuilder, DatabaseConnector,
                  OncoKB, stringUtils, S, MainUtils, gapi, UUIDjs, dialogs) {
+            $scope.removeObsoleted = function() {
+                removeObsoletedSingleGene(0);
+            };
+            var obsoletedNCCN = [
+                {
+                    "Gene": "BRAF",
+                    "Mutation": "Oncogenic Mutations",
+                    "Tumor": "Non-Small Cell Lung Cancer",
+                    "NCCN": "NCCN"
+                },
+                {
+                    "Gene": "MSH2",
+                    "Mutation": "A636P",
+                    "Tumor": "Colorectal Cancer",
+                    "NCCN": "NCCN"
+                },
+                {
+                    "Gene": "CTNNB1",
+                    "Mutation": "T41A",
+                    "Tumor": "Soft Tissue Sarcoma",
+                    "NCCN": "NCCN"
+                },
+                {
+                    "Gene": "EGFR",
+                    "Mutation": "S492R",
+                    "Tumor": "Colorectal Cancer",
+                    "NCCN": "NCCN"
+                },
+                {
+                    "Gene": "MYC",
+                    "Mutation": "Fusions",
+                    "Tumor": "All Liquid Tumors",
+                    "NCCN": "NCCN"
+                },
+                {
+                    "Gene": "NF1",
+                    "Mutation": "Oncogenic Mutations",
+                    "Tumor": "Soft Tissue Sarcoma",
+                    "NCCN": "NCCN"
+                },
+                {
+                    "Gene": "KIT",
+                    "Mutation": "Oncogenic Mutations",
+                    "Tumor": "Gastrointestinal Stromal Tumor",
+                    "NCCN": "NCCN"
+                },
+                {
+                    "Gene": "KIT",
+                    "Mutation": "Oncogenic Mutations",
+                    "Tumor": "Melanoma",
+                    "NCCN": "NCCN"
+                },
+                {
+                    "Gene": "IDH2",
+                    "Mutation": "R172G/K/M/S, R140Q",
+                    "Tumor": "Glioma",
+                    "NCCN": "NCCN"
+                },
+                {
+                    "Gene": "CDKN2B",
+                    "Mutation": "Hypermethylation",
+                    "Tumor": "Leukemia",
+                    "NCCN": "NCCN"
+                },
+                {
+                    "Gene": "EWSR1",
+                    "Mutation": "EWSR1-ATF1 Fusion",
+                    "Tumor": "Soft Tissue Sarcoma",
+                    "NCCN": "NCCN"
+                }
+            ];
+            var obsoletedprevalence = [
+                {
+                    "Gene": "BRAF",
+                    "Mutation": "Q201H",
+                    "Tumor": "Ovarian Cancer",
+                    "Prevalence": "Prevalence"
+                },
+                {
+                    "Gene": "BRAF",
+                    "Mutation": "G464E",
+                    "Tumor": "Head and Neck Cancer",
+                    "Prevalence": "Prevalence"
+                },
+                {
+                    "Gene": "BRAF",
+                    "Mutation": "G464E",
+                    "Tumor": "Breast Cancer",
+                    "Prevalence": "Prevalence"
+                },
+                {
+                    "Gene": "BRAF",
+                    "Mutation": "G464E",
+                    "Tumor": "Ovarian Cancer",
+                    "Prevalence": "Prevalence"
+                },
+                {
+                    "Gene": "BRAF",
+                    "Mutation": "G464E",
+                    "Tumor": "Melanoma",
+                    "Prevalence": "Prevalence"
+                },
+                {
+                    "Gene": "BRAF",
+                    "Mutation": "G469A",
+                    "Tumor": "Non-Small Cell Lung Cancer",
+                    "Prevalence": "Prevalence"
+                },
+                {
+                    "Gene": "BRAF",
+                    "Mutation": "E586K",
+                    "Tumor": "Melanoma",
+                    "Prevalence": "Prevalence"
+                },
+                {
+                    "Gene": "BRAF",
+                    "Mutation": "p61BRAF(V600E)",
+                    "Tumor": "Melanoma",
+                    "Prevalence": "Prevalence"
+                },
+                {
+                    "Gene": "BRAF",
+                    "Mutation": "G469R",
+                    "Tumor": "Melanoma",
+                    "Prevalence": "Prevalence"
+                },
+                {
+                    "Gene": "BRAF",
+                    "Mutation": "G469R",
+                    "Tumor": "Skin Cancer, Non-Melanoma",
+                    "Prevalence": "Prevalence"
+                },
+                {
+                    "Gene": "BRAF",
+                    "Mutation": "N581Y",
+                    "Tumor": "Esophagogastric Cancer",
+                    "Prevalence": "Prevalence"
+                },
+                {
+                    "Gene": "BRAF",
+                    "Mutation": "G469V",
+                    "Tumor": "Colorectal Cancer",
+                    "Prevalence": "Prevalence"
+                },
+                {
+                    "Gene": "BRAF",
+                    "Mutation": "G469V",
+                    "Tumor": "Melanoma",
+                    "Prevalence": "Prevalence"
+                },
+                {
+                    "Gene": "BRAF",
+                    "Mutation": "G469V",
+                    "Tumor": "Non-Small Cell Lung Cancer",
+                    "Prevalence": "Prevalence"
+                },
+                {
+                    "Gene": "BRAF",
+                    "Mutation": "G469V",
+                    "Tumor": "Bladder Cancer",
+                    "Prevalence": "Prevalence"
+                },
+                {
+                    "Gene": "BRAF",
+                    "Mutation": "N486_P490del",
+                    "Tumor": "Ovarian Cancer",
+                    "Prevalence": "Prevalence"
+                },
+                {
+                    "Gene": "BRAF",
+                    "Mutation": "V600_K601delinsE",
+                    "Tumor": "Thyroid Cancer",
+                    "Prevalence": "Prevalence"
+                },
+                {
+                    "Gene": "BRAF",
+                    "Mutation": "AGK-BRAF Fusion",
+                    "Tumor": "Melanoma",
+                    "Prevalence": "Prevalence"
+                },
+                {
+                    "Gene": "BRAF",
+                    "Mutation": "AGK-BRAF Fusion",
+                    "Tumor": "Glioma",
+                    "Prevalence": "Prevalence"
+                },
+                {
+                    "Gene": "BRAF",
+                    "Mutation": "AGK-BRAF Fusion",
+                    "Tumor": "Non-Small Cell Lung Cancer",
+                    "Prevalence": "Prevalence"
+                },
+                {
+                    "Gene": "BRAF",
+                    "Mutation": "AGK-BRAF Fusion",
+                    "Tumor": "Thyroid Cancer",
+                    "Prevalence": "Prevalence"
+                },
+                {
+                    "Gene": "BRAF",
+                    "Mutation": "SND1-BRAF Fusion",
+                    "Tumor": "Non-Small Cell Lung Cancer",
+                    "Prevalence": "Prevalence"
+                },
+                {
+                    "Gene": "BRAF",
+                    "Mutation": "SND1-BRAF Fusion",
+                    "Tumor": "Pancreatic Cancer",
+                    "Prevalence": "Prevalence"
+                },
+                {
+                    "Gene": "BRAF",
+                    "Mutation": "AKAP9-BRAF Fusion",
+                    "Tumor": "Thyroid Cancer",
+                    "Prevalence": "Prevalence"
+                },
+                {
+                    "Gene": "BRAF",
+                    "Mutation": "CUL1-BRAF Fusion",
+                    "Tumor": "Ovarian Cancer",
+                    "Prevalence": "Prevalence"
+                },
+                {
+                    "Gene": "BRAF",
+                    "Mutation": "FAM131B-BRAF Fusion",
+                    "Tumor": "Glioma",
+                    "Prevalence": "Prevalence"
+                },
+                {
+                    "Gene": "ERBB2",
+                    "Mutation": "S310F",
+                    "Tumor": "Bladder Cancer",
+                    "Prevalence": "Prevalence"
+                },
+                {
+                    "Gene": "ERBB2",
+                    "Mutation": "E770_K831indel [Exon 20 insertions/deletions], E770_K831ins [Exon 20 insertions]",
+                    "Tumor": "Non-Small Cell Lung Cancer",
+                    "Prevalence": "Prevalence"
+                },
+                {
+                    "Gene": "ERBB2",
+                    "Mutation": "Oncogenic Mutations",
+                    "Tumor": "All Tumors",
+                    "Prevalence": "Prevalence"
+                },
+                {
+                    "Gene": "CTNNB1",
+                    "Mutation": "Oncogenic Mutations",
+                    "Tumor": "Non-Small Cell Lung Cancer",
+                    "Prevalence": "Prevalence"
+                },
+                {
+                    "Gene": "CTNNB1",
+                    "Mutation": "Oncogenic Mutations",
+                    "Tumor": "Bladder Cancer",
+                    "Prevalence": "Prevalence"
+                },
+                {
+                    "Gene": "EGFR",
+                    "Mutation": "R831H",
+                    "Tumor": "Non-Small Cell Lung Cancer",
+                    "Prevalence": "Prevalence"
+                },
+                {
+                    "Gene": "EGFR",
+                    "Mutation": "Amplification",
+                    "Tumor": "Diffuse Glioma",
+                    "Prevalence": "Prevalence"
+                },
+                {
+                    "Gene": "ERBB3",
+                    "Mutation": "Oncogenic Mutations",
+                    "Tumor": "Colorectal Cancer",
+                    "Prevalence": "Prevalence"
+                },
+                {
+                    "Gene": "JAK1",
+                    "Mutation": "G871E",
+                    "Tumor": "All Tumors",
+                    "Prevalence": "Prevalence"
+                },
+                {
+                    "Gene": "MYC",
+                    "Mutation": "Amplification",
+                    "Tumor": "Bone Cancer",
+                    "Prevalence": "Prevalence"
+                },
+                {
+                    "Gene": "MYC",
+                    "Mutation": "Amplification",
+                    "Tumor": "Melanoma",
+                    "Prevalence": "Prevalence"
+                },
+                {
+                    "Gene": "MYC",
+                    "Mutation": "Amplification",
+                    "Tumor": "Endometrial Cancer",
+                    "Prevalence": "Prevalence"
+                },
+                {
+                    "Gene": "MYC",
+                    "Mutation": "Amplification",
+                    "Tumor": "Soft Tissue Sarcoma",
+                    "Prevalence": "Prevalence"
+                },
+                {
+                    "Gene": "MYC",
+                    "Mutation": "Amplification",
+                    "Tumor": "Esophageal Squamous Cell Carcinoma",
+                    "Prevalence": "Prevalence"
+                },
+                {
+                    "Gene": "MYC",
+                    "Mutation": "Amplification",
+                    "Tumor": "Skin Cancer, Non-Melanoma",
+                    "Prevalence": "Prevalence"
+                },
+                {
+                    "Gene": "MYC",
+                    "Mutation": "Amplification",
+                    "Tumor": "Chronic Myelogenous Leukemia",
+                    "Prevalence": "Prevalence"
+                },
+                {
+                    "Gene": "MYC",
+                    "Mutation": "Fusions",
+                    "Tumor": "Chronic Lymphocytic Leukemia",
+                    "Prevalence": "Prevalence"
+                },
+                {
+                    "Gene": "MYC",
+                    "Mutation": "Fusions",
+                    "Tumor": "Leukemia",
+                    "Prevalence": "Prevalence"
+                },
+                {
+                    "Gene": "TSC1",
+                    "Mutation": "Oncogenic Mutations",
+                    "Tumor": "All Tumors",
+                    "Prevalence": "Prevalence"
+                },
+                {
+                    "Gene": "MAP3K1",
+                    "Mutation": "T779fs",
+                    "Tumor": "Histiocytosis",
+                    "Prevalence": "Prevalence"
+                },
+                {
+                    "Gene": "MYCN",
+                    "Mutation": "Amplification",
+                    "Tumor": "Retinoblastoma",
+                    "Prevalence": "Prevalence"
+                },
+                {
+                    "Gene": "MYCN",
+                    "Mutation": "Amplification",
+                    "Tumor": "Soft Tissue Sarcoma",
+                    "Prevalence": "Prevalence"
+                },
+                {
+                    "Gene": "MYCN",
+                    "Mutation": "Amplification",
+                    "Tumor": "Breast Cancer",
+                    "Prevalence": "Prevalence"
+                },
+                {
+                    "Gene": "MYCN",
+                    "Mutation": "Amplification",
+                    "Tumor": "Glioma",
+                    "Prevalence": "Prevalence"
+                },
+                {
+                    "Gene": "YAP1",
+                    "Mutation": "YAP1-TFE3 Fusion",
+                    "Tumor": "Soft Tissue Sarcoma",
+                    "Prevalence": "Prevalence"
+                },
+                {
+                    "Gene": "TSC2",
+                    "Mutation": "Oncogenic Mutations",
+                    "Tumor": "Hepatobiliary Cancer",
+                    "Prevalence": "Prevalence"
+                },
+                {
+                    "Gene": "PTPN11",
+                    "Mutation": "Oncogenic Mutations",
+                    "Tumor": "Myelodysplasia",
+                    "Prevalence": "Prevalence"
+                },
+                {
+                    "Gene": "PTPN11",
+                    "Mutation": "Oncogenic Mutations",
+                    "Tumor": "Glioma",
+                    "Prevalence": "Prevalence"
+                },
+                {
+                    "Gene": "IDH1",
+                    "Mutation": "R49C",
+                    "Tumor": "Glioma",
+                    "Prevalence": "Prevalence"
+                },
+                {
+                    "Gene": "IDH1",
+                    "Mutation": "R132H",
+                    "Tumor": "Acute Myeloid Leukemia",
+                    "Prevalence": "Prevalence"
+                },
+                {
+                    "Gene": "KMT2C",
+                    "Mutation": "Deletion",
+                    "Tumor": "Colorectal Cancer",
+                    "Prevalence": "Prevalence"
+                },
+                {
+                    "Gene": "KMT2C",
+                    "Mutation": "Truncating Mutations",
+                    "Tumor": "Bladder Cancer",
+                    "Prevalence": "Prevalence"
+                },
+                {
+                    "Gene": "KMT2C",
+                    "Mutation": "Truncating Mutations",
+                    "Tumor": "Breast Cancer",
+                    "Prevalence": "Prevalence"
+                },
+                {
+                    "Gene": "KMT2C",
+                    "Mutation": "Truncating Mutations",
+                    "Tumor": "Colorectal Cancer",
+                    "Prevalence": "Prevalence"
+                },
+                {
+                    "Gene": "KMT2C",
+                    "Mutation": "Truncating Mutations",
+                    "Tumor": "Leukemia",
+                    "Prevalence": "Prevalence"
+                },
+                {
+                    "Gene": "KMT2C",
+                    "Mutation": "Truncating Mutations",
+                    "Tumor": "Embryonal Tumor",
+                    "Prevalence": "Prevalence"
+                },
+                {
+                    "Gene": "FGFR1",
+                    "Mutation": "Amplification",
+                    "Tumor": "Prostate Cancer",
+                    "Prevalence": "Prevalence"
+                },
+                {
+                    "Gene": "FGFR1",
+                    "Mutation": "Amplification",
+                    "Tumor": "All Tumors",
+                    "Prevalence": "Prevalence"
+                },
+                {
+                    "Gene": "KDR",
+                    "Mutation": "Oncogenic Mutations",
+                    "Tumor": "Thyroid Cancer",
+                    "Prevalence": "Prevalence"
+                },
+                {
+                    "Gene": "KDR",
+                    "Mutation": "Oncogenic Mutations",
+                    "Tumor": "Renal Cell Carcinoma",
+                    "Prevalence": "Prevalence"
+                },
+                {
+                    "Gene": "KDR",
+                    "Mutation": "Oncogenic Mutations",
+                    "Tumor": "Colorectal Cancer",
+                    "Prevalence": "Prevalence"
+                },
+                {
+                    "Gene": "KDR",
+                    "Mutation": "Oncogenic Mutations",
+                    "Tumor": "Ovarian Cancer",
+                    "Prevalence": "Prevalence"
+                },
+                {
+                    "Gene": "KDR",
+                    "Mutation": "Oncogenic Mutations",
+                    "Tumor": "Cervical Cancer",
+                    "Prevalence": "Prevalence"
+                },
+                {
+                    "Gene": "KDR",
+                    "Mutation": "Oncogenic Mutations",
+                    "Tumor": "Non-Small Cell Lung Cancer",
+                    "Prevalence": "Prevalence"
+                },
+                {
+                    "Gene": "KDR",
+                    "Mutation": "Oncogenic Mutations",
+                    "Tumor": "All Solid Tumors",
+                    "Prevalence": "Prevalence"
+                },
+                {
+                    "Gene": "FOXA1",
+                    "Mutation": "Amplification",
+                    "Tumor": "Esophagogastric Cancer",
+                    "Prevalence": "Prevalence"
+                },
+                {
+                    "Gene": "KIT",
+                    "Mutation": "L576P",
+                    "Tumor": "Thymic Tumor",
+                    "Prevalence": "Prevalence"
+                },
+                {
+                    "Gene": "KIT",
+                    "Mutation": "V560del",
+                    "Tumor": "Thymic Tumor",
+                    "Prevalence": "Prevalence"
+                },
+                {
+                    "Gene": "KIT",
+                    "Mutation": "K642E",
+                    "Tumor": "Gastrointestinal Stromal Tumor",
+                    "Prevalence": "Prevalence"
+                },
+                {
+                    "Gene": "KIT",
+                    "Mutation": "K642E",
+                    "Tumor": "Thymic Tumor",
+                    "Prevalence": "Prevalence"
+                },
+                {
+                    "Gene": "KIT",
+                    "Mutation": "W557_K558del",
+                    "Tumor": "Gastrointestinal Stromal Tumor",
+                    "Prevalence": "Prevalence"
+                },
+                {
+                    "Gene": "KIT",
+                    "Mutation": "W557R",
+                    "Tumor": "Thymic Carcinoma",
+                    "Prevalence": "Prevalence"
+                },
+                {
+                    "Gene": "KIT",
+                    "Mutation": "(Imatinib - Melanoma) L576P, K642E, V559A",
+                    "Tumor": "Melanoma",
+                    "Prevalence": "Prevalence"
+                },
+                {
+                    "Gene": "CASP8",
+                    "Mutation": "Truncating Mutations",
+                    "Tumor": "Colorectal Cancer",
+                    "Prevalence": "Prevalence"
+                },
+                {
+                    "Gene": "CASP8",
+                    "Mutation": "Oncogenic Mutations",
+                    "Tumor": "Colorectal Cancer",
+                    "Prevalence": "Prevalence"
+                },
+                {
+                    "Gene": "CDKN2A",
+                    "Mutation": "H83Y",
+                    "Tumor": "Melanoma",
+                    "Prevalence": "Prevalence"
+                },
+                {
+                    "Gene": "CDH1",
+                    "Mutation": "Oncogenic Mutations",
+                    "Tumor": "Breast Cancer",
+                    "Prevalence": "Prevalence"
+                },
+                {
+                    "Gene": "EP300",
+                    "Mutation": "EP300-MOZ Fusion, EP300-MLL Fusion",
+                    "Tumor": "Leukemia",
+                    "Prevalence": "Prevalence"
+                },
+                {
+                    "Gene": "EP300",
+                    "Mutation": "Truncating Mutations",
+                    "Tumor": "All Solid Tumors",
+                    "Prevalence": "Prevalence"
+                },
+                {
+                    "Gene": "AKT2",
+                    "Mutation": "E17K",
+                    "Tumor": "Breast Cancer",
+                    "Prevalence": "Prevalence"
+                },
+                {
+                    "Gene": "AKT2",
+                    "Mutation": "E17K",
+                    "Tumor": "Thyroid Cancer",
+                    "Prevalence": "Prevalence"
+                },
+                {
+                    "Gene": "AKT2",
+                    "Mutation": "Amplification",
+                    "Tumor": "Non-Small Cell Lung Cancer",
+                    "Prevalence": "Prevalence"
+                },
+                {
+                    "Gene": "AKT2",
+                    "Mutation": "Amplification",
+                    "Tumor": "Head and Neck Cancer",
+                    "Prevalence": "Prevalence"
+                },
+                {
+                    "Gene": "AKT2",
+                    "Mutation": "Amplification",
+                    "Tumor": "Ovarian Cancer",
+                    "Prevalence": "Prevalence"
+                }
+            ];
+            var obsoletedLevels = [
+                {
+                    "Gene": "ALK",
+                    "Mutation": "C1156Y",
+                    "Tumor": "Non-Small Cell Lung Cancer",
+                    "Level": "1",
+                    "Treatment": "Ceritinib"
+                },
+                {
+                    "Gene": "ALK",
+                    "Mutation": "C1156Y",
+                    "Tumor": "Non-Small Cell Lung Cancer",
+                    "Level": "1",
+                    "Treatment": "Alectinib"
+                },
+                {
+                    "Gene": "APC",
+                    "Mutation": "Oncogenic Mutations",
+                    "Tumor": "Colorectal Cancer",
+                    "Level": "0",
+                    "Treatment": "5-Fluorouracil"
+                },
+                {
+                    "Gene": "EGFR",
+                    "Mutation": "Amplification",
+                    "Tumor": "Colorectal Cancer",
+                    "Level": "0",
+                    "Treatment": "Cetuximab"
+                },
+                {
+                    "Gene": "EGFR",
+                    "Mutation": "Amplification",
+                    "Tumor": "Colorectal Cancer",
+                    "Level": "0",
+                    "Treatment": "Panitumumab"
+                },
+                {
+                    "Gene": "EGFR",
+                    "Mutation": "Amplification",
+                    "Tumor": "Head and Neck Cancer",
+                    "Level": "0",
+                    "Treatment": "Cetuximab"
+                },
+                {
+                    "Gene": "EGFR",
+                    "Mutation": "G598V",
+                    "Tumor": "Non-Small Cell Lung Cancer",
+                    "Level": "1",
+                    "Treatment": "Erlotinib"
+                },
+                {
+                    "Gene": "EGFR",
+                    "Mutation": "G719A, G719C, G719S, G719D",
+                    "Tumor": "Non-Small Cell Lung Cancer",
+                    "Level": "1",
+                    "Treatment": "Afatinib"
+                },
+                {
+                    "Gene": "EGFR",
+                    "Mutation": "L861Q, L861R",
+                    "Tumor": "Non-Small Cell Lung Cancer",
+                    "Level": "1",
+                    "Treatment": "Afatinib"
+                },
+                {
+                    "Gene": "EGFR",
+                    "Mutation": "S768I",
+                    "Tumor": "Non-Small Cell Lung Cancer",
+                    "Level": "1",
+                    "Treatment": "Afatinib"
+                },
+                {
+                    "Gene": "EGFR",
+                    "Mutation": "S768I",
+                    "Tumor": "Non-Small Cell Lung Cancer",
+                    "Level": "1",
+                    "Treatment": "Gefitinib"
+                },
+                {
+                    "Gene": "KIT",
+                    "Mutation": "A502_Y503dup (Exon 9)",
+                    "Tumor": "Gastrointestinal Stromal Tumor",
+                    "Level": "1",
+                    "Treatment": "Sunitinib"
+                },
+                {
+                    "Gene": "KIT",
+                    "Mutation": "D816G (Exon 17)",
+                    "Tumor": "Gastrointestinal Stromal Tumor",
+                    "Level": "1",
+                    "Treatment": "Regorafenib"
+                },
+                {
+                    "Gene": "KIT",
+                    "Mutation": "D820A (Exon 17)",
+                    "Tumor": "Gastrointestinal Stromal Tumor",
+                    "Level": "2A",
+                    "Treatment": "Sorafenib"
+                },
+                {
+                    "Gene": "KIT",
+                    "Mutation": "D820A (Exon 17)",
+                    "Tumor": "Gastrointestinal Stromal Tumor",
+                    "Level": "2A",
+                    "Treatment": "Dasatinib"
+                },
+                {
+                    "Gene": "KIT",
+                    "Mutation": "D820A (Exon 17)",
+                    "Tumor": "Gastrointestinal Stromal Tumor",
+                    "Level": "2A",
+                    "Treatment": "Nilotinib"
+                },
+                {
+                    "Gene": "KIT",
+                    "Mutation": "D820E (Exon 17)",
+                    "Tumor": "Gastrointestinal Stromal Tumor",
+                    "Level": "2A",
+                    "Treatment": "Sorafenib"
+                },
+                {
+                    "Gene": "KIT",
+                    "Mutation": "D820G (Exon 17)",
+                    "Tumor": "Gastrointestinal Stromal Tumor",
+                    "Level": "1",
+                    "Treatment": "Sunitinib"
+                },
+                {
+                    "Gene": "KIT",
+                    "Mutation": "D820G (Exon 17)",
+                    "Tumor": "Gastrointestinal Stromal Tumor",
+                    "Level": "1",
+                    "Treatment": "Regorafenib"
+                },
+                {
+                    "Gene": "KIT",
+                    "Mutation": "D820G (Exon 17)",
+                    "Tumor": "Gastrointestinal Stromal Tumor",
+                    "Level": "2A",
+                    "Treatment": "Sorafenib"
+                },
+                {
+                    "Gene": "KIT",
+                    "Mutation": "D820G (Exon 17)",
+                    "Tumor": "Gastrointestinal Stromal Tumor",
+                    "Level": "2A",
+                    "Treatment": "Dasatinib"
+                },
+                {
+                    "Gene": "KIT",
+                    "Mutation": "D820G (Exon 17)",
+                    "Tumor": "Gastrointestinal Stromal Tumor",
+                    "Level": "2A",
+                    "Treatment": "Nilotinib"
+                },
+                {
+                    "Gene": "KIT",
+                    "Mutation": "D820Y (Exon 17)",
+                    "Tumor": "Gastrointestinal Stromal Tumor",
+                    "Level": "1",
+                    "Treatment": "Regorafenib"
+                },
+                {
+                    "Gene": "KIT",
+                    "Mutation": "K550_K558del (Exon 11)",
+                    "Tumor": "Gastrointestinal Stromal Tumor",
+                    "Level": "1",
+                    "Treatment": "Imatinib"
+                },
+                {
+                    "Gene": "KIT",
+                    "Mutation": "K550_K558del (Exon 11)",
+                    "Tumor": "Gastrointestinal Stromal Tumor",
+                    "Level": "1",
+                    "Treatment": "Sunitinib"
+                },
+                {
+                    "Gene": "KIT",
+                    "Mutation": "K558delinsNP (Exon 11)",
+                    "Tumor": "Gastrointestinal Stromal Tumor",
+                    "Level": "1",
+                    "Treatment": "Sunitinib"
+                },
+                {
+                    "Gene": "KIT",
+                    "Mutation": "K642E (Exon 13)",
+                    "Tumor": "Gastrointestinal Stromal Tumor",
+                    "Level": "1",
+                    "Treatment": "Imatinib"
+                },
+                {
+                    "Gene": "KIT",
+                    "Mutation": "K642E (Exon 13)",
+                    "Tumor": "Melanoma",
+                    "Level": "2A",
+                    "Treatment": "Imatinib"
+                },
+                {
+                    "Gene": "KIT",
+                    "Mutation": "L576P (Exon 11)",
+                    "Tumor": "Melanoma",
+                    "Level": "2A",
+                    "Treatment": "Imatinib"
+                },
+                {
+                    "Gene": "KIT",
+                    "Mutation": "M541L (Exon 10)",
+                    "Tumor": "Leukemia",
+                    "Level": "1",
+                    "Treatment": "Imatinib"
+                },
+                {
+                    "Gene": "KIT",
+                    "Mutation": "N822H (Exon 17)",
+                    "Tumor": "Gastrointestinal Stromal Tumor",
+                    "Level": "1",
+                    "Treatment": "Imatinib"
+                },
+                {
+                    "Gene": "KIT",
+                    "Mutation": "N822H (Exon 17)",
+                    "Tumor": "Gastrointestinal Stromal Tumor",
+                    "Level": "1",
+                    "Treatment": "Sunitinib"
+                },
+                {
+                    "Gene": "KIT",
+                    "Mutation": "N822K (Exon 17)",
+                    "Tumor": "Gastrointestinal Stromal Tumor",
+                    "Level": "1",
+                    "Treatment": "Regorafenib"
+                },
+                {
+                    "Gene": "KIT",
+                    "Mutation": "Oncogenic Mutations",
+                    "Tumor": "Gastrointestinal Stromal Tumor",
+                    "Level": "0",
+                    "Treatment": "Sunitinib"
+                },
+                {
+                    "Gene": "KIT",
+                    "Mutation": "Oncogenic Mutations",
+                    "Tumor": "Gastrointestinal Stromal Tumor",
+                    "Level": "0",
+                    "Treatment": "Regorafenib"
+                },
+                {
+                    "Gene": "KIT",
+                    "Mutation": "Oncogenic Mutations",
+                    "Tumor": "Gastrointestinal Stromal Tumor",
+                    "Level": "1",
+                    "Treatment": "Imatinib"
+                },
+                {
+                    "Gene": "KIT",
+                    "Mutation": "Oncogenic Mutations",
+                    "Tumor": "Melanoma",
+                    "Level": "2A",
+                    "Treatment": "Imatinib"
+                },
+                {
+                    "Gene": "KIT",
+                    "Mutation": "R449_E514mut [Exon 9 mutations] (A502_Y503dup, N505I, E490K, S476I, N463S, A504_Y505ins, K509I,S501_A502dup)",
+                    "Tumor": "Gastrointestinal Stromal Tumor",
+                    "Level": "1",
+                    "Treatment": "Sunitinib"
+                },
+                {
+                    "Gene": "KIT",
+                    "Mutation": "T670I (Exon 14)",
+                    "Tumor": "Gastrointestinal Stromal Tumor",
+                    "Level": "1",
+                    "Treatment": "Sunitinib"
+                },
+                {
+                    "Gene": "KIT",
+                    "Mutation": "V560D (Exon 11)",
+                    "Tumor": "Gastrointestinal Stromal Tumor",
+                    "Level": "1",
+                    "Treatment": "Imatinib"
+                },
+                {
+                    "Gene": "KIT",
+                    "Mutation": "V560del (Exon 11)",
+                    "Tumor": "Gastrointestinal Stromal Tumor",
+                    "Level": "1",
+                    "Treatment": "Imatinib"
+                },
+                {
+                    "Gene": "KIT",
+                    "Mutation": "V560E (Exon 11)",
+                    "Tumor": "Melanoma",
+                    "Level": "2A",
+                    "Treatment": "Imatinib"
+                },
+                {
+                    "Gene": "KIT",
+                    "Mutation": "V654A (Exon 13)",
+                    "Tumor": "Gastrointestinal Stromal Tumor",
+                    "Level": "1",
+                    "Treatment": "Sunitinib"
+                },
+                {
+                    "Gene": "KIT",
+                    "Mutation": "W557G (Exon 11)",
+                    "Tumor": "Gastrointestinal Stromal Tumor",
+                    "Level": "1",
+                    "Treatment": "Imatinib"
+                },
+                {
+                    "Gene": "KIT",
+                    "Mutation": "Y578C (Exon 11)",
+                    "Tumor": "Gastrointestinal Stromal Tumor",
+                    "Level": "1",
+                    "Treatment": "Imatinib"
+                },
+                {
+                    "Gene": "PDGFRA",
+                    "Mutation": "D842_H845del",
+                    "Tumor": "Gastrointestinal Stromal Tumor",
+                    "Level": "2A",
+                    "Treatment": "Imatinib"
+                },
+                {
+                    "Gene": "PDGFRA",
+                    "Mutation": "D842_M844del",
+                    "Tumor": "Gastrointestinal Stromal Tumor",
+                    "Level": "2A",
+                    "Treatment": "Imatinib"
+                },
+                {
+                    "Gene": "PDGFRA",
+                    "Mutation": "D842Y",
+                    "Tumor": "Gastrointestinal Stromal Tumor",
+                    "Level": "2A",
+                    "Treatment": "Imatinib"
+                },
+                {
+                    "Gene": "PDGFRA",
+                    "Mutation": "D846Y",
+                    "Tumor": "Gastrointestinal Stromal Tumor",
+                    "Level": "2A",
+                    "Treatment": "Imatinib"
+                },
+                {
+                    "Gene": "PDGFRA",
+                    "Mutation": "G853D",
+                    "Tumor": "Gastrointestinal Stromal Tumor",
+                    "Level": "2A",
+                    "Treatment": "Imatinib"
+                },
+                {
+                    "Gene": "PDGFRA",
+                    "Mutation": "H650Q",
+                    "Tumor": "Gastrointestinal Stromal Tumor",
+                    "Level": "2A",
+                    "Treatment": "Imatinib"
+                },
+                {
+                    "Gene": "PDGFRA",
+                    "Mutation": "I843del",
+                    "Tumor": "Gastrointestinal Stromal Tumor",
+                    "Level": "2A",
+                    "Treatment": "Imatinib"
+                },
+                {
+                    "Gene": "PDGFRA",
+                    "Mutation": "N659K",
+                    "Tumor": "Gastrointestinal Stromal Tumor",
+                    "Level": "2A",
+                    "Treatment": "Imatinib"
+                },
+                {
+                    "Gene": "PDGFRA",
+                    "Mutation": "N659R",
+                    "Tumor": "Gastrointestinal Stromal Tumor",
+                    "Level": "2A",
+                    "Treatment": "Imatinib"
+                },
+                {
+                    "Gene": "PDGFRA",
+                    "Mutation": "N848K",
+                    "Tumor": "Gastrointestinal Stromal Tumor",
+                    "Level": "2A",
+                    "Treatment": "Imatinib"
+                },
+                {
+                    "Gene": "PDGFRA",
+                    "Mutation": "P577S",
+                    "Tumor": "All Tumors",
+                    "Level": "2A",
+                    "Treatment": "Imatinib"
+                },
+                {
+                    "Gene": "PDGFRA",
+                    "Mutation": "R841_D842delinsKI",
+                    "Tumor": "Gastrointestinal Stromal Tumor",
+                    "Level": "2A",
+                    "Treatment": "Imatinib"
+                },
+                {
+                    "Gene": "PDGFRA",
+                    "Mutation": "S566_E571delinsR",
+                    "Tumor": "Gastrointestinal Stromal Tumor",
+                    "Level": "2A",
+                    "Treatment": "Imatinib"
+                },
+                {
+                    "Gene": "PDGFRA",
+                    "Mutation": "V561D",
+                    "Tumor": "Gastrointestinal Stromal Tumor",
+                    "Level": "2A",
+                    "Treatment": "Imatinib"
+                },
+                {
+                    "Gene": "PDGFRA",
+                    "Mutation": "W559_R560del",
+                    "Tumor": "Gastrointestinal Stromal Tumor",
+                    "Level": "2A",
+                    "Treatment": "Imatinib"
+                },
+                {
+                    "Gene": "PDGFRA",
+                    "Mutation": "Y849C",
+                    "Tumor": "Gastrointestinal Stromal Tumor",
+                    "Level": "2A",
+                    "Treatment": "Imatinib"
+                },
+                {
+                    "Gene": "PDGFRA",
+                    "Mutation": "Y849S",
+                    "Tumor": "Gastrointestinal Stromal Tumor",
+                    "Level": "2A",
+                    "Treatment": "Imatinib"
+                },
+                {
+                    "Gene": "RET",
+                    "Mutation": "Fusions",
+                    "Tumor": "Thyroid Cancer",
+                    "Level": "0",
+                    "Treatment": "Sorafenib"
+                },
+                {
+                    "Gene": "RET",
+                    "Mutation": "Fusions",
+                    "Tumor": "Thyroid Cancer",
+                    "Level": "0",
+                    "Treatment": "Lenvatinib"
+                },
+                {
+                    "Gene": "RET",
+                    "Mutation": "Fusions",
+                    "Tumor": "Thyroid Cancer",
+                    "Level": "0",
+                    "Treatment": "Sunitinib, Pazopanib, Axitinib, Vandetanib"
+                },
+                {
+                    "Gene": "RET",
+                    "Mutation": "Oncogenic Mutations",
+                    "Tumor": "Thyroid Cancer",
+                    "Level": "0",
+                    "Treatment": "Sorafenib, Sunitinib"
+                },
+                {
+                    "Gene": "TSC1",
+                    "Mutation": "Oncogenic Mutations",
+                    "Tumor": "Renal Cell Carcinoma",
+                    "Level": "0",
+                    "Treatment": "Temsirolimus"
+                },
+                {
+                    "Gene": "TSC2",
+                    "Mutation": "Oncogenic Mutations",
+                    "Tumor": "Renal Cell Carcinoma",
+                    "Level": "0",
+                    "Treatment": "Everolimus"
+                }
+            ];
+            function isTobeRemoved(type, geneName, mutationName, tumorName, treatmentName, treatmentLevel) {
+                if (type === 'NCCN') {
+                    for (var i = 0; i < obsoletedNCCN.length; i++) {
+                        var tempObj = obsoletedNCCN[i];
+                        if (isSameStr(tempObj.Gene, geneName) && isSameStr(tempObj.Mutation, mutationName) && isSameStr(tempObj.Tumor, tumorName)) {
+                            return true;
+                        }
+                    }
+                } else if (type === 'prevalence') {
+                    for (var i = 0; i < obsoletedprevalence.length; i++) {
+                        var tempObj = obsoletedprevalence[i];
+                        if (isSameStr(tempObj.Gene, geneName) && isSameStr(tempObj.Mutation, mutationName) && isSameStr(tempObj.Tumor, tumorName)) {
+                            return true;
+                        }
+                    }
+                } else if (type === 'levels') {
+                    for (var i = 0; i < obsoletedLevels.length; i++) {
+                        var tempObj = obsoletedLevels[i];
+                        if (isSameStr(tempObj.Gene, geneName) && isSameStr(tempObj.Mutation, mutationName) && isSameStr(tempObj.Tumor, tumorName) && isSameStr(tempObj.Treatment, treatmentName) && isSameStr(tempObj.Level, treatmentLevel)) {
+                            return true;
+                        }
+                    }
+                }
+                return false;
+            }
+            function isSameStr(a, b) {
+                var processedA = a;
+                if (a) {
+                    processedA = a.trim().toUpperCase();
+                }
+                var processedB = b;
+                if (b) {
+                    processedB = b.trim().toUpperCase();
+                }
+                if (processedA === processedB) {
+                    return true;
+                }
+                return false;
+            }
+            function removeObsoletedSingleGene(index) {
+                if (index < $scope.documents.length) {
+                    if (index%20 === 0) {
+                        console.log(index);
+                    }
+                    var fileId = $scope.documents[index].id;
+                    storage.getRealtimeDocument(fileId).then(function(realtime) {
+                        if (realtime && realtime.error) {
+                            console.log('did not get realtime document.');
+                        } else {
+                            var gene = realtime.getModel().getRoot().get('gene');
+                            if (gene) {
+                                var geneName = gene.name.text;
+                                _.each(gene.mutations.asArray(), function(mutation) {
+                                    var mutationName = mutation.name.text;
+                                    _.each(mutation.tumors.asArray(), function(tumor) {
+                                        var tumorName = MainUtils.getCancerTypesName(tumor.cancerTypes);
+                                        if (isTobeRemoved('NCCN', geneName, mutationName, tumorName)) {
+                                            console.log('NCCN', geneName, mutationName, tumorName);
+                                            // tumor.nccn.therapy.setText('');
+                                            // tumor.nccn.disease.setText('');
+                                            // tumor.nccn.version.setText('');
+                                            // tumor.nccn.short.setText('');
+                                            // tumor.nccn.description.setText('');
+                                            // clearReviewObj([tumor.nccn_review, tumor.nccn.therapy_review, tumor.nccn.disease_review, tumor.nccn.version_review, tumor.nccn.short_review, tumor.nccn.description_review]);
+                                            // removeUUIDs(geneName, [tumor.nccn.therapy_uuid, tumor.nccn.disease_uuid, tumor.nccn.version_uuid, tumor.nccn.short_uuid, tumor.nccn.description_uuid]);
+                                            // tumor.nccn_eStatus.delete('obsolete');
+                                        }
+                                        if (isTobeRemoved('prevalence', geneName, mutationName, tumorName)) {
+                                            console.log('Prevalence', geneName, mutationName, tumorName);
+                                            // tumor.prevalence.setText('');
+                                            // tumor.shortPrevalence.setText('');
+                                            // clearReviewObj([tumor.prevalence_review, tumor.shortPrevalence_review]);
+                                            // removeUUIDs(geneName, [tumor.prevalence_uuid, tumor.shortPrevalence_uuid]);
+                                            // tumor.prevalence_eStatus.delete('obsolete');
+                                        }
+                                        _.each(tumor.TI.asArray(), function(ti) {
+                                            _.each(ti.treatments.asArray(), function(treatment) {
+                                                if (treatment.name_eStatus.get('obsolete') === 'true' && isTobeRemoved('levels', geneName, mutationName, tumorName, treatment.name.text, treatment.level.text)) {
+                                                    console.log(geneName, mutationName, tumorName, treatment.name.text);
+                                                    // var uuids = [treatment.name_uuid.getText(), treatment.level_uuid.getText(), treatment.indication_uuid.getText(), treatment.description_uuid.getText()];
+                                                    // removeUUIDs(uuids, geneName);
+                                                    // ti.treatments.removeValue(treatment);
+                                                }
+                                            });
+                                        });
+                                    });
+                                });
+                            } else {
+                                console.log('\t\tNo gene model.');
+                            }
+                            $timeout(function() {
+                                removeObsoletedSingleGene(++index);
+                            }, 2000, false);
+                        }
+                    });
+                } else {
+                    console.log('finished.');
+                }
+            }
+            function clearReviewObj(reviewObjs) {
+                _.each(reviewObjs, function(item) {
+                    if (item) {
+                        item.clear();
+                    }
+                });
+            }
+            function removeUUIDs(uuids, geneName) {
+                var singGeneMetaData = $rootScope.metaData.get(geneName);
+                if (singGeneMetaData) {
+                    if (uuids && _.isArray(uuids)) {
+                        _.each(uuids, function(uuid) {
+                            if (uuid && singGeneMetaData.has(uuid)) {
+                                singGeneMetaData.delete(uuid);
+                            }
+                        });
+                    }
+                }
+            }
+
+
+
             function saveGene(docs, docIndex, excludeObsolete, callback) {
                 if (docIndex < docs.length) {
                     var fileId = docs[docIndex].id;

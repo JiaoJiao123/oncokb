@@ -6,7 +6,7 @@
                 <!--<button type="button" class="btn btn-default" ng-if="userRole === 8" ng-click="resetPermission()">Reset files permission</button>-->
                 <!--<button type="button" class="btn btn-default" ng-if="userRole === 8" ng-click="giveFolderPermission()">Give folder permission</button>-->
                 <!--<button type="button" class="btn btn-default" ng-if="userRole === 8" ng-click="create()">Create Doc</button>-->
-                <!--<button type="button" class="btn btn-default" ng-if="userRole === 8" ng-click="startFEUUIDImportingFE()">UUID</button>-->
+                <button type="button" class="btn btn-default" ng-if="userRole === 8" ng-click="removeObsoleted()">Remove Obsoleted</button>
                 <button type="button" class="btn btn-default" ng-if="userRole === 8 && developerCheck()" ng-click="checkError()">Check errors</button>
                 <button type="button" class="btn btn-default" ng-if="userRole === 8 && developerCheck()" ng-click="saveAllGenes()"><span ng-show="!!!status.saveAllGenes"><i class="fa fa-spinner fa-spin"></i></span><span ng-show="!!status.saveAllGenes">Save All Genes</span></button>
                 <!--<button type="button" class="btn btn-default" ng-if="userRole === 8 && internal" ng-click="resetCache()"><span>Reset Cache</span></button>-->
@@ -64,15 +64,15 @@
             </tbody>
         </table>
     </div>
-    <div ng-if="userRole === 8">
-        <loading ng-model="status.rendering" content="Please wait, we are loading genes information."></loading>
-        <div style="margin-bottom:50px">
-            <hr/>
-            <curation-queue ng-if="!status.queueRendering" location="'genes'" queue="queue" hugo-symbols="geneNames" docs="documents" meta-flags="metaFlags"></curation-queue>
-            <div ng-if="!status.rendering && status.queueRendering" style="margin-left:40%">
-                <span>Loading Curation Queue </span>
-                <img src="images/ajax-loader.gif"/>
-            </div>
-        </div>
-    </div>
+    <!--<div ng-if="userRole === 8">-->
+        <!--<loading ng-model="status.rendering" content="Please wait, we are loading genes information."></loading>-->
+        <!--<div style="margin-bottom:50px">-->
+            <!--<hr/>-->
+            <!--<curation-queue ng-if="!status.queueRendering" location="'genes'" queue="queue" hugo-symbols="geneNames" docs="documents" meta-flags="metaFlags"></curation-queue>-->
+            <!--<div ng-if="!status.rendering && status.queueRendering" style="margin-left:40%">-->
+                <!--<span>Loading Curation Queue </span>-->
+                <!--<img src="images/ajax-loader.gif"/>-->
+            <!--</div>-->
+        <!--</div>-->
+    <!--</div>-->
 </div>
