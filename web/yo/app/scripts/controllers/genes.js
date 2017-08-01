@@ -9,6 +9,67 @@ angular.module('oncokbApp')
                  config, importer, storage, Documents, users,
                  DTColumnDefBuilder, DTOptionsBuilder, DatabaseConnector,
                  OncoKB, stringUtils, S, MainUtils, gapi, UUIDjs, dialogs) {
+
+            $scope.generateFiles = function() {
+                var result = ['Gene', 'Mutation', 'Tumor', 'Tumor Type Summary', 'Obsoleted', 'Needs to be reviewed'];
+                console.log(result.join('$'));
+                generateFromSingleGene(0);
+            };
+            function generateFromSingleGene(docIndex) {
+                if (docIndex < $scope.documents.length) {
+                    var fileId = $scope.documents[docIndex].id;
+                    storage.getRealtimeDocument(fileId).then(function(realtime) {
+                        if (realtime && realtime.error) {
+                            console.log('did not get realtime document.');
+                        } else {
+                            if (docIndex% 50 === 0) {
+                                console.log('*********************', docIndex);
+                            }
+                            // console.log($scope.documents[docIndex].title, '\t\t', docIndex);
+                            var gene = realtime.getModel().getRoot().get('gene');
+                            if (gene) {
+                                _.each(gene.mutations.asArray(), function(mutation) {
+                                    var mutationName = mutation.name.text;
+                                    _.each(mutation.tumors.asArray(), function(tumor) {
+                                        var tumorName = MainUtils.getCancerTypesName(tumor.cancerTypes);
+                                        var tumorSummary = tumor.summary.text;
+                                        if (tumorSummary) {
+                                            var result = [gene.name.text, mutationName, tumorName, tumorSummary];
+                                            if (tumor.name_eStatus.get('obsolete') === true) {
+                                                result.push('Yes');
+                                            } else {
+                                                result.push('No');
+                                            }
+                                            if (tumor.summary_review.get('lastReviewed')) {
+                                                result.push('Yes');
+                                            } else {
+                                                result.push('No');
+                                            }
+                                            console.log(result.join('$'));
+                                        }
+                                        // _.each(tumor.TI.asArray(), function(ti) {
+                                        //     _.each(ti.treatments.asArray(), function(treatment) {
+                                        //         console.log(treatment.level.getText());
+                                        //     });
+                                        // });
+                                    });
+                                });
+                            } else {
+                                console.log('\t\tNo gene model.');
+                            }
+                            $timeout(function() {
+                                generateFromSingleGene(++docIndex);
+                            }, 200, false);
+                        }
+                    });
+                } else {
+                    console.log('finished.');
+                }
+            }
+
+
+
+
             function saveGene(docs, docIndex, excludeObsolete, callback) {
                 if (docIndex < docs.length) {
                     var fileId = docs[docIndex].id;
