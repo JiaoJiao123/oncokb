@@ -9,6 +9,52 @@ angular.module('oncokbApp')
                  config, importer, storage, Documents, users,
                  DTColumnDefBuilder, DTOptionsBuilder, DatabaseConnector,
                  OncoKB, stringUtils, S, MainUtils, gapi, UUIDjs, dialogs) {
+
+            $scope.generateFiles = function() {
+                var result = ['Gene', 'Mutation', 'Tumor', 'A', 'B', 'C'];
+                console.log(result.join('$'));
+                generateFromSingleGene(0);
+            };
+            function generateFromSingleGene(docIndex) {
+                if (docIndex < $scope.documents.length) {
+                    var fileId = $scope.documents[docIndex].id;
+                    storage.getRealtimeDocument(fileId).then(function(realtime) {
+                        if (realtime && realtime.error) {
+                            console.log('did not get realtime document.');
+                        } else {
+                            if (docIndex% 50 === 0) {
+                                console.log('*********************', docIndex);
+                            }
+                            var gene = realtime.getModel().getRoot().get('gene');
+                            if (gene) {
+                                _.each(gene.mutations.asArray(), function(mutation) {
+                                    var mutationName = mutation.name.text;
+                                    _.each(mutation.tumors.asArray(), function(tumor) {
+                                        var tumorName = MainUtils.getCancerTypesName(tumor.cancerTypes);
+                                        _.each(tumor.TI.asArray(), function(ti) {
+                                            _.each(ti.treatments.asArray(), function(treatment) {
+                                                var result = [gene.name.text, mutationName, tumorName, 'A', 'B', 'C'];
+                                                console.log(result.join('$'))
+                                            });
+                                        });
+                                    });
+                                });
+                            } else {
+                                console.log('\t\tNo gene model.');
+                            }
+                            $timeout(function() {
+                                generateFromSingleGene(++docIndex);
+                            }, 2000, false);
+                        }
+                    });
+                } else {
+                    console.log('finished.');
+                }
+            }
+
+
+
+
             function saveGene(docs, docIndex, excludeObsolete, callback) {
                 if (docIndex < docs.length) {
                     var fileId = docs[docIndex].id;
