@@ -65,4 +65,99 @@
         </table>
     </div>
     <loading ng-model="status.rendering" content="Please wait, we are loading genes information."></loading>
+    <p>Date: <input type="text" id="datepicker"></p>
+    <div class="row" style="margin-top:80px;margin-bottom:50px">
+        <div class="col-sm-3" style="margin-top:-20px;"><h3>Curation Queue</h3></div>
+        <div class="col-sm-2" style="margin-left:-70px;"><button ng-click="addCuration()" class="btn btn-default">Add Curation</button></div>
+        <div class="col-sm-4" style="margin-left:-20px;margin-top:10px">
+        <span>
+            <input id="displaySwitch"
+                   type="checkbox"
+                   ng-model="allCuration"
+                   ng-value="allCuration">
+            <label for="displaySwitch">Include Completed Curations</label>
+        </span>
+        </div>
+    </div>
+    <table class="table" style="width:100%">
+        <thead>
+        <tr>
+            <th>Gene</th>
+            <th>Article</th>
+            <th>Variant</th>
+            <th>Tumor Type</th>
+            <th>Section</th>
+            <th>Added by</th>
+            <th>Added at</th>
+            <th>Due day</th>
+            <th>Curator</th>
+            <th>Comment</th>
+            <th>Operation</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+            <td><strong><a ng-href="#/gene/EGFR">EGFR</a></strong></td>
+            <td style="width:20%"><a href="" target="_blank">Participation of feldshers and midwives in the secret and partisan activities during the great patriotic war ...1975</a>
+                <pub-iframe
+                        ng-model="data.pmidString">
+                </pub-iframe>
+            </td>
+            <td>R34M</td>
+            <td>Non small cell lung cancer</td>
+            <td>NCCN guidelines</td>
+            <td>Jiaojiao Wang</td>
+            <td>Aug 8, 12:04 PM 2017</td>
+            <td>Aug/16/2017</td>
+            <td>Jiaojiao Wang</td>
+            <td style="width:20%">Some comments left for EGFR curation. Participation...</td>
+            <td style="min-width: 130px;">
+                <button type="button" class="btn btn-success btn-xs successButton"
+                        uib-tooltip-placement="top" uib-tooltip="Complete curation"><i
+                        class="fa fa-check"></i>
+                </button>
+                <button type="button" class="btn btn-warning btn-xs warningButton"
+                        uib-tooltip-placement="top" uib-tooltip="Modify curation"><i
+                        class="fa fa-edit"></i>
+                </button>
+                <button type="button" class="btn btn-danger btn-xs dangerButton"
+                        ng-show="userRole === 8" uib-tooltip-placement="top"
+                        uib-tooltip="Delete curation"><i class="fa fa-trash-o"></i>
+                </button>
+            </td>
+        </tr>
+        <tr>
+            <td><strong><a ng-href="#/gene/BRAF">BRAF</a></strong></td>
+            <td style="width:20%"><a href="" target="_blank">Participation of feldshers and midwives in the secret and partisan activities during the great patriotic war ...2005</a>
+                <pub-iframe
+                        ng-model="data.pmidString">
+                </pub-iframe></td>
+            <td>V600E</td>
+            <td>Melanoma</td>
+            <td>Mutation Effect</td>
+            <td>Jiaojiao Wang</td>
+            <td>July 15, 12:04 PM 2017</td>
+            <td>Aug/6/2017</td>
+            <td>Jiaojiao Wang</td>
+            <td style="width:20%">Some comments left for BRAF curation. Participation...</td>
+            <td style="min-width: 130px;">
+                <button type="button" class="btn btn-success btn-xs successButton"
+                        uib-tooltip-placement="top" uib-tooltip="Complete curation"><i
+                        class="fa fa-check"></i>
+                </button>
+                <button type="button" class="btn btn-warning btn-xs warningButton"
+                        uib-tooltip-placement="top" uib-tooltip="Modify curation"><i
+                        class="fa fa-edit"></i>
+                </button>
+                <button type="button" class="btn btn-danger btn-xs dangerButton"
+                        ng-show="userRole === 8" uib-tooltip-placement="top"
+                        uib-tooltip="Delete curation"><i class="fa fa-trash-o"></i>
+                </button>
+                <button type="button" class="btn btn-success btn-xs successButton"
+                        uib-tooltip-placement="top" uib-tooltip="Notify again"><i class="fa fa-envelope" aria-hidden="true"></i>
+                </button>
+            </td>
+        </tr>
+        </tbody>
+    </table>
 </div>

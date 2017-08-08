@@ -1,0 +1,73 @@
+<form style="margin:50px 50px 100px 50px">
+    <div class="form-group">
+        <label for="article">PMID or Abstract <span style="color:red">*</span></label>
+        <input type="email" class="form-control" id="article" placeholder="PMID or Abstract">
+    </div>
+    <div class="form-group">
+        <label for="link">Link</label>
+        <input type="email" class="form-control" id="link" placeholder="Link">
+    </div>
+    <div class="form-group">
+        <label for="genes">Gene: <span style="color:red">*</span></label>
+        <select chosen multiple
+                id="genes"
+                ng-model="chosenGenes"
+                ng-options="m for m in data.genes"
+                allow-single-deselect="true"
+                class="chosen-select">
+        </select>
+    </div>
+    <div class="form-group">
+        <label for="variant">Variant</label>
+        <input type="variant" class="form-control" id="variant" placeholder="Variant">
+    </div>
+    <div class="form-group">
+        <label for="tumorType">Tumor Type:</label>
+        <p id="tumorType">Main type, Sub type</p>
+        <!--<input type="tumorType" class="form-control" id="tumorType" placeholder="Tumor Type">-->
+    </div>
+    <div class="form-group">
+        <label for="section">Section: </label>
+        <select chosen multiple
+                ng-model="section"
+                id="section"
+                ng-options="m for m in data.sections"
+                allow-single-deselect="true"
+                class="chosen-select">
+        </select>
+    </div>
+    <div class="form-group">
+        <label for="curators">Curators: </label>
+        <select chosen
+                data-placeholder="Choose A Curator"
+                id="curators"
+                ng-model="curator"
+                ng-options="m for m in data.curators"
+                allow-single-deselect="true"
+                class="chosen-select">
+            <option value=""></option>
+        </select>
+    </div>
+    <div class="form-group">
+        <label for="periods">Due day: </label>
+        <p id="periods">Put a calendar here</p>
+        <p>Date: <input type="text" id="datepicker"></p>
+        <!--<select chosen-->
+                <!--data-placeholder="Choose A Curator"-->
+                <!--id="periods"-->
+                <!--ng-model="periods"-->
+                <!--ng-options="m for m in data.periods"-->
+                <!--allow-single-deselect="true"-->
+                <!--class="chosen-select">-->
+            <!--<option value=""></option>-->
+        <!--</select>-->
+    </div>
+    <div class="form-group">
+        <label for="comments">Comments</label>
+        <textarea class="form-control" rows="2" id="comments" placeholder="Comments"></textarea>
+    </div>
+    <div style="float:right;">
+        <button tyle="submit" class="btn btn-success">Add</button>
+        <button tyle="submit" class="btn btn-default">Cancel</button>
+    </div>
+</form>

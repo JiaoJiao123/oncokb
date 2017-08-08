@@ -1600,5 +1600,27 @@ angular.module('oncokbApp')
                     callback();
                 }
             }
+            $scope.data = {
+                genes: ['BRAF', 'EGFR', 'KRAS', 'PIK3CA'],
+                sections: ['Mutation Effect', 'Prevalence', 'Prognostic implications', 'NCCN guidelines', 'Standard sensitivity', 'Standard resistance', 'Investigational sensitivity', 'Investigational resistance'],
+                curators: ['Jiaojiao Wang', 'Hongxin Zhang'],
+                pmidString: 'PMID: 123',
+                periods: ['One week', 'Two weeks', 'Three weeks']
+            };
+            $scope.addCuration = function() {
+                var dlg = dialogs.create('views/curation.html', 'GenesCtrl', {
+                }, {
+                    size: 'lg'
+                });
+                dlg.result.then(function(name) {
+                    console.log('successfully updated tumor type');
+                    // write the old cancertype and subtypes to the review model
+                }, function() {
+                    console.log('failed to updated tumor type');
+                });
+            };
+            $( function() {
+                $( "#datepicker" ).datepicker();
+            } );
         }]
     );
