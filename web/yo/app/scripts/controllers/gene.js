@@ -428,7 +428,7 @@ angular.module('oncokbApp')
                     return $scope.status[x].savingAll ? 'Saving ' + '<i class="fa fa-spinner fa-spin"></i>' : 'Accept All Changes from <b>' + x + '</b>';
                 }
                 return '';
-            }
+            };
             function prepareReviewItems() {
                 $scope.status.noChanges = false;
                 $scope.status.hasReviewContent = false;
@@ -3552,7 +3552,10 @@ angular.module('oncokbApp')
                 numAccordion: 0,
                 isDesiredGene: false,
                 hasReviewContent: false, // indicate if any changes need to be reviewed
-                mutationChanged: false // indicate there are changes in mutation section
+                mutationChanged: false, // indicate there are changes in mutation section
+                showComments: false,
+                showHands: false,
+                showBatteries: false
             };
 
             $scope.$watch('meta.newCancerTypes', function(n) {
