@@ -19,28 +19,7 @@
         </button>
         <ul class="dropdown-menu" uib-dropdown-menu role="menu" aria-labelledby="btn-append-to-body" ng-if="::(userRole === 8)">
           <li ng-click="generatePDF()"><a><i class="fa fa-download"></i>Download PDF</a></li>
-          <li ng-click="status.hideAllEmpty=true"><a><i class="fa fa-eye-slash"></i>Hide all empty</a></li>
-          <li ng-click="status.hideAllEmpty=false"><a><i class="fa fa-eye"></i>Show all empty</a></li>
-          <li ng-click="status.hideAllObsolete=true"><a><i class="fa fa-eye-slash"></i>Hide all obsolete</a></li>
-          <li ng-click="status.hideAllObsolete=false"><a><i class="fa fa-eye"></i>Show all obsolete</a></li>
-          <li ng-if="(status.numAccordion < 100 && gene.mutations.length < 20) || (status.numAccordion < 200 && gene.mutations.length < 6)" ng-click="status.expandAll=true"><a><i class="fa fa-expand"></i>Expand all</a></li>
-          <li ng-if="(status.numAccordion < 100 && gene.mutations.length < 20) || (status.numAccordion < 200 && gene.mutations.length < 6)" ng-click="status.expandAll=false"><a><i class="fa fa-compress"></i>Collapse all</a></li>
         </ul>
-
-        <button type="button" class="btn btn-default" ng-click="status.hideAllEmpty=true" ng-if="::(userRole === 4)">
-          <i class="fa fa-eye"></i>Hide all empty
-        </button>
-        <button type="button" class="btn btn-default" ng-click="status.hideAllEmpty=false" ng-if="::(userRole === 4)">
-          <i class="fa fa-eye"></i>Show all empty
-        </button>
-        <button type="button" class="btn btn-default"  ng-click="status.expandAll=true"
-                ng-if="userRole === 4 && ((status.numAccordion < 100 && gene.mutations.length < 20) || (status.numAccordion < 200 && gene.mutations.length < 6))">
-          <i class="fa fa-expand"></i>Expand all
-        </button>
-        <button type="button" class="btn btn-default"  ng-click="status.expandAll=false"
-                ng-if="userRole === 4 && ((status.numAccordion < 100 && gene.mutations.length < 20) || (status.numAccordion < 200 && gene.mutations.length < 6))">
-          <i class="fa fa-compress"></i>Collapse all
-        </button>
       </span>
 
     </h2>
@@ -571,26 +550,6 @@
 <div ng-hide="status.rendering" class="floatToolBox btn-group btn-group-sm" role="group">
   <span class="btn btn-default" style="opacity: 1" disabled>{{::gene.name.text}}</span>
   <button type="button" class="btn btn-default" ng-click="generatePDF()">Download PDF</button>
-  <button type="button" class="btn btn-default" ng-click="status.hideAllEmpty=true">
-    <i class="fa fa-eye-slash"></i>Hide all empty
-  </button>
-  <button type="button" class="btn btn-default" ng-click="status.hideAllEmpty=false">
-    <i class="fa fa-eye"></i>Show all empty
-  </button>
-  <button ng-if="::(userRole === 8)" type="button" class="btn btn-default" ng-click="status.hideAllObsolete=true">
-    <i class="fa fa-eye-slash"></i>Hide all obsolete
-  </button>
-  <button ng-if="::(userRole === 8)" type="button" class="btn btn-default" ng-click="status.hideAllObsolete=false">
-    <i class="fa fa-eye-slash"></i>Show all obsolete
-  </button>
-    <button type="button" class="btn btn-default" ng-click="status.expandAll=true"
-            ng-if="(status.numAccordion < 100 && gene.mutations.length < 20) || (status.numAccordion < 200 && gene.mutations.length < 6)">
-    <i class="fa fa-expand"></i>Expand all
-  </button>
-  <button type="button" class="btn btn-default"  ng-click="status.expandAll=false"
-          ng-if="(status.numAccordion < 100 && gene.mutations.length < 20) || (status.numAccordion < 200 && gene.mutations.length < 6)">
-    <i class="fa fa-compress"></i>Collapse all
-  </button>
   <!--<button type="button" class="btn btn-default"  ng-click="status.expandAll=!status.expandAll">-->
     <!--<i class="fa " ng-class="{'fa-compress':status.expandAll, 'fa-expand':!status.expandAll}"></i>-->
     <!--<span ng-if="!status.expandAll">Expand</span><span ng-if="status.expandAll">Collapse</span> all-->
