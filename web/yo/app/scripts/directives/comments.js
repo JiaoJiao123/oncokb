@@ -7,7 +7,7 @@
  * # comments
  */
 angular.module('oncokbApp')
-    .directive('commentsDict', function(DatabaseConnector, users, $timeout) {
+    .directive('commentsDict', function(DatabaseConnector, users, $timeout, ReviewResource) {
         return {
             templateUrl: 'views/comments.html',
             restrict: 'AE',
@@ -116,6 +116,9 @@ angular.module('oncokbApp')
                 $scope.delete = function(index) {
                     $scope.comments.remove(index);
                 };
+                $scope.inReviewMode = function () {
+                    return ReviewResource.reviewMode;
+                }
             }
         };
     });

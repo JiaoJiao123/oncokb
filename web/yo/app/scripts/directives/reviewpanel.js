@@ -465,7 +465,7 @@ angular.module('oncokbApp')
                         type: type, mutation: mutation, tumor: tumor, therapyCategory: therapyCategory, treatment: treatment
                     });
                 };
-                $scope.getReviewModeValue = function () {
+                $scope.inReviewMode = function () {
                     return ReviewResource.reviewMode;
                 }
             }

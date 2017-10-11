@@ -7,7 +7,7 @@
  * # pubIframe
  */
 angular.module('oncokbApp')
-    .directive('pubIframe', function(FindRegex, S, $timeout) {
+    .directive('pubIframe', function(FindRegex, S, $timeout, ReviewResource) {
         return {
             templateUrl: 'views/pubIframe.html',
             restrict: 'E',
@@ -21,6 +21,8 @@ angular.module('oncokbApp')
                     var pubs = FindRegex.result(modelValue);
                     if (pubs.length === 0) {
                         scope.pubs = [];
+                    } else if (ReviewResource.reviewMode === true) {
+                        scope.pubs = result;
                     } else {
                         FindRegex.validation(pubs).then(function(result) {
                             scope.pubs = result;
