@@ -3042,7 +3042,9 @@ angular.module('oncokbApp')
                             mainUtils.sendEmail(sendTo, subject, content);
                             callback();
                         } else {
-                            storage.getMetaRealtimeDocument(result[0].id).then(function(metaRealtime) {
+                            Documents.setAdditionalDocs(result);
+                            var meta = Documents.getAdditionalDoc('meta');
+                            storage.getMetaRealtimeDocument(meta.id).then(function(metaRealtime) {
                                 if (metaRealtime && metaRealtime.error) {
                                     dialogs.error('Error', 'Fail to get meta document! Please stop editing and contact the developer!');
                                     $scope.fileEditable = false;
