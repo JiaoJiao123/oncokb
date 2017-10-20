@@ -4,11 +4,11 @@ angular.module('oncokbApp')
     .controller('GenesCtrl', ['$scope', '$rootScope', '$location', '$timeout',
         '$routeParams', '_', 'config', 'importer', 'storage', 'documents',
         'users', 'DTColumnDefBuilder', 'DTOptionsBuilder', 'DatabaseConnector',
-        'OncoKB', 'stringUtils', 'S', 'mainUtils', 'gapi', 'UUIDjs', 'dialogs',
+        'OncoKB', 'stringUtils', 'S', 'mainUtils', 'gapi', 'UUIDjs', 'dialogs', 'additionalFile',
         function($scope, $rootScope, $location, $timeout, $routeParams, _,
                  config, importer, storage, Documents, users,
                  DTColumnDefBuilder, DTOptionsBuilder, DatabaseConnector,
-                 OncoKB, stringUtils, S, MainUtils, gapi, UUIDjs, dialogs) {
+                 OncoKB, stringUtils, S, MainUtils, gapi, UUIDjs, dialogs, additionalFile) {
             function saveGene(docs, docIndex, excludeObsolete, callback) {
                 if (docIndex < docs.length) {
                     var fileId = docs[docIndex].id;
@@ -60,7 +60,99 @@ angular.module('oncokbApp')
                     console.log('finished.');
                 }
             }
-
+            var genesWithArticle = [];
+            $scope.collectQueue = function() {
+                var genes = $rootScope.metaData.keys();
+                for (var i = 0; i < genes.length; i++) {
+                    var geneMetaData = $rootScope.metaData.get(genes[i]);
+                    if (geneMetaData && geneMetaData.get('AllArticles') > 0) {
+                        genesWithArticle.push(genes[i]);
+                    }
+                }
+                console.log('Here are a list of genes having queue data', genesWithArticle);
+                moveQueueDataSingleGene(0);
+            };
+            var queueList = [];
+            function moveQueueDataSingleGene(index) {
+                if (index < genesWithArticle.length) {
+                    var doc = Documents.get({title: genesWithArticle[index]})[0];
+                    if (doc) {
+                        var fileId = doc.id;
+                        storage.getRealtimeDocument(fileId).then(function(realtime) {
+                            if (realtime && realtime.error) {
+                                console.log('did not get realtime document.');
+                            } else {
+                                var queue = realtime.getModel().getRoot().get('queue');
+                                if (queue.length > 0) {
+                                    console.log(index, genesWithArticle[index]);
+                                    _.each(queue.asArray(), function(item) {
+                                        queueList.push({
+                                            gene: genesWithArticle[index],
+                                            link: item.get('link'),
+                                            variant: item.get('variant'),
+                                            mainType: item.get('mainType'),
+                                            subType: item.get('subType'),
+                                            section: item.get('section'),
+                                            curator: item.get('curator'),
+                                            curated: item.get('curated'),
+                                            addedBy: item.get('addedBy'),
+                                            addedAt: item.get('addedAt'),
+                                            dueDay: item.get('dueDay'),
+                                            comment: item.get('comment'),
+                                            notified: item.get('notified'),
+                                            article: item.get('article'),
+                                            pmid: item.get('pmid')
+                                        });
+                                    });
+                                }
+                                $timeout(function() {
+                                    moveQueueDataSingleGene(++index);
+                                }, 2000, false);
+                            }
+                        });
+                    } else {
+                        moveQueueDataSingleGene(++index);
+                    }
+                } else {
+                    console.log('Finished collecting...');
+                    console.log(queueList);
+                    $scope.relocateQueue();
+                }
+            }
+            $scope.relocateQueue = function() {
+                var queuesDoc = Documents.getAdditionalDoc('queues');
+                storage.getRealtimeDocument(queuesDoc.id).then(function(realtime) {
+                    if (realtime && realtime.error) {
+                        console.log('did not get realtime document.');
+                    } else {
+                        var queuesDocModel = realtime.getModel();
+                        var queuesModel = queuesDocModel.getRoot().get('queues');
+                        _.each(queueList, function(item) {
+                            var queueItem = queuesDocModel.createMap({
+                                link: item.link,
+                                variant: item.variant,
+                                mainType: item.mainType,
+                                subType: item.subType,
+                                section: item.section,
+                                curator: item.curator,
+                                curated: item.curated,
+                                addedBy: item.addedBy,
+                                addedAt: item.addedAt,
+                                dueDay: item.dueDay,
+                                comment: item.comment,
+                                notified: item.notified,
+                                article: item.article,
+                                pmid: item.pmid
+                            });
+                            if (!queuesModel.has(item.gene)) {
+                                queuesModel.set(item.gene, queuesDocModel.createList());
+                            }
+                            queuesModel.get(item.gene).push(queueItem);
+                        });
+                        console.log('Finished inserting');
+                    }
+                });
+            };
             $scope.showDocs = function() {
                 $scope.documents.forEach(function(item) {
                     console.log(item.title);
@@ -91,30 +183,8 @@ angular.module('oncokbApp')
                                 Documents.set(result);
                                 Documents.setStatus(OncoKB.global.genes);
                                 if (users.getMe().role === 8) {
-                                    storage.retrieveMeta().then(function(result) {
-                                        if (result && (result.error || !_.isArray(result) || result.length === 0)) {
-                                            dialogs.error('Error', 'Fail to retrieve meta file! Please stop editing and contact the developer!');
-                                            var sendTo = 'dev.oncokb@gmail.com';
-                                            var subject = 'Fail to retrieve meta file';
-                                            var content;
-                                            if (_.isArray(result) && result.length === 0) {
-                                                content = 'There is no meta file inside the Meta folder';
-                                            } else {
-                                                content = 'System error is ' + JSON.stringify(result.error);
-                                            }
-                                            MainUtils.sendEmail(sendTo, subject, content);
-                                        } else {
-                                            storage.getMetaRealtimeDocument(result[0].id).then(function(metaRealtime) {
-                                                if (metaRealtime && metaRealtime.error) {
-                                                    dialogs.error('Error', 'Fail to get meta document! Please stop editing and contact the developer!');
-                                                } else {
-                                                    $rootScope.metaRealtime = metaRealtime;
-                                                    $rootScope.metaModel = metaRealtime.getModel();
-                                                    $rootScope.metaData = metaRealtime.getModel().getRoot().get('review');
-                                                    processMeta();
-                                                }
-                                            });
-                                        }
+                                    additionalFile.load(['all']).then(function(result) {
+                                        processMeta();
                                     });
                                 } else {
                                     $scope.documents = Documents.get();
@@ -125,106 +195,46 @@ angular.module('oncokbApp')
                     });
                 }
             };
+            var genesWithArticle = [];
             function processMeta() {
-                var genesWithArticle = [];
-                var genes = $rootScope.metaData.keys();
-                for (var i = 0; i < genes.length; i++) {
-                    $scope.metaFlags[genes[i]] = {};
-                    var geneMetaData = $rootScope.metaData.get(genes[i]);
+                var genesToReview = $rootScope.metaData.keys();
+                for (var i = 0; i < genesToReview.length; i++) {
+                    $scope.metaFlags[genesToReview[i]] = {};
+                    var geneMetaData = $rootScope.metaData.get(genesToReview[i]);
                     var uuids = geneMetaData.keys();
                     var flag = true;
                     for (var j = 0; j < uuids.length; j++) {
                         if (geneMetaData.get(uuids[j]).type === 'Map' && geneMetaData.get(uuids[j]).get('review')) {
-                            $scope.metaFlags[genes[i]].review = true;
+                            $scope.metaFlags[genesToReview[i]].review = true;
                             flag = false;
                             break;
                         }
                     }
                     if (flag) {
-                        $scope.metaFlags[genes[i]].review = false;
+                        $scope.metaFlags[genesToReview[i]].review = false;
                     }
-                    if (geneMetaData && geneMetaData.get('CurationQueueArticles') > 0) {
-                        $scope.metaFlags[genes[i]].CurationQueueArticles = geneMetaData.get('CurationQueueArticles');
-                    } else {
-                        $scope.metaFlags[genes[i]].CurationQueueArticles = 0;
+                }
+                var genesInQueues = $rootScope.queuesData.keys();
+                for (var i = 0; i < genesInQueues.length; i++) {
+                    var tempCount = 0;
+                    for (var j = 0; j < $rootScope.queuesData.get(genesInQueues[i]).length; j++) {
+                        if ($rootScope.queuesData.get(genesInQueues[i]).get(j).get('curated') !== true) {
+                            tempCount++;
+                        }
                     }
-                    if (geneMetaData && geneMetaData.get('AllArticles') > 0) {
-                        genesWithArticle.push(genes[i]);
+                    if (tempCount >0) {
+                        if ($scope.metaFlags[genesInQueues[i]]) {
+                            $scope.metaFlags[genesInQueues[i]].queues = tempCount;
+                        } else {
+                            $scope.metaFlags[genesInQueues[i]] = {
+                                queues: tempCount
+                            };
+                        }
                     }
                 }
                 $scope.documents = Documents.get();
                 $scope.status.rendering = false;
-                var geneNames = [];
-                for (var i = 0; i < $scope.documents.length; i++) {
-                    geneNames.push($scope.documents[i].title);
-                }
-                $scope.geneNames = geneNames;
-                if (genesWithArticle.length > 0) {
-                    searchCuration(genesWithArticle, 0);
-                } else {
-                    $scope.status.queueRendering = false;
-                    $scope.queue = [];
-                }
             }
-            var curationResults = [];
-            function searchCuration(genesForCuration, index) {
-                var documents = Documents.get({title: genesForCuration[index]});
-                var document = _.isArray(documents) && documents.length === 1 ? documents[0] : null;
-                if (document) {
-                    storage.getRealtimeDocument(document.id).then(function(realtime) {
-                        if (realtime && realtime.error) {
-                            dialogs.error('Error', 'Fail to load ' + genesForCuration[index] + ' document. Please contact the developer.');
-                        } else {
-                            var model = realtime.getModel();
-                            var queueModel = model.getRoot().get('queue');
-                            if (queueModel) {
-                                _.each(queueModel.asArray(), function(item) {
-                                    if (item.get('curator') && MainUtils.isExpiredCuration(item.get('dueDay')) && !item.get('notified')) {
-                                        item.set('notified', new Date().getTime());
-                                    }
-                                    curationResults.push({
-                                        hugoSymbol: genesForCuration[index],
-                                        article: item.get('article'),
-                                        pmid: item.get('pmid'),
-                                        pmidString: 'PMID: ' + item.get('pmid'),
-                                        link: item.get('link'),
-                                        variant: item.get('variant'),
-                                        mainType: item.get('mainType'),
-                                        subType: item.get('subType'),
-                                        section: item.get('section'),
-                                        addedBy: item.get('addedBy'),
-                                        addedAt: item.get('addedAt'),
-                                        curated: item.get('curated'),
-                                        curator: item.get('curator'),
-                                        dueDay: item.get('dueDay'),
-                                        comment: item.get('comment'),
-                                        notified: item.get('notified')
-                                    });
-                                });
-                            }
-                            if (index === genesForCuration.length - 1) {
-                                $scope.queue = curationResults;
-                                $scope.status.queueRendering = false;
-                            } else {
-                                $timeout(function() {
-                                    index++;
-                                    searchCuration(genesForCuration, index);
-                                }, 200);
-                            }
-                        }
-                    });
-                } else {
-                    if (index === genesForCuration.length - 1) {
-                        $scope.queue = curationResults;
-                        $scope.status.queueRendering = false;
-                    } else {
-                        $timeout(function() {
-                            index++;
-                            searchCuration(genesForCuration, index);
-                        }, 200);
-                    }
-                }
-            };
             var dueDay = angular.element(document.querySelector('#genesdatepicker'));
             dueDay.datepicker();
             $scope.backup = function(backupFolderName) {
@@ -1554,7 +1564,24 @@ angular.module('oncokbApp')
                     console.log('finished.');
                 }
             }
-
+            $scope.createQueue = function() {
+               var parentFolderId = '0By19QWSOYlS_cVpGTFlPTUhGUlU';
+               var fileName = 'Queues';
+                storage.createDocument(fileName, parentFolderId)
+                    .then(function(result) {
+                        if (result && result.error) {
+                            console.error('\tError when creating document.');
+                            deferred.reject(result);
+                        } else {
+                            storage.getRealtimeDocument(result.id)
+                                .then(function(file) {
+                                    var model = file.getModel();
+                                    var queues = model.createMap();
+                                    model.getRoot().set('queues', queues);
+                                });
+                        }
+                    });
+            };
             function createDoc(index) {
                 if (index < newGenes.length) {
                     var gene = newGenes[index];

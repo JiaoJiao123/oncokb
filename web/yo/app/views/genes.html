@@ -5,7 +5,7 @@
                 <!--<button type="button" class="btn btn-default" ng-if="userRole === 8" ng-click="givePermission()">Give files permission</button>-->
                 <!--<button type="button" class="btn btn-default" ng-if="userRole === 8" ng-click="resetPermission()">Reset files permission</button>-->
                 <!--<button type="button" class="btn btn-default" ng-if="userRole === 8" ng-click="giveFolderPermission()">Give folder permission</button>-->
-                <!--<button type="button" class="btn btn-default" ng-if="userRole === 8" ng-click="create()">Create Doc</button>-->
+                <button type="button" class="btn btn-default" ng-if="userRole === 8" ng-click="collectQueue()">Relocate queue data</button>
                 <!--<button type="button" class="btn btn-default" ng-if="userRole === 8" ng-click="startFEUUIDImportingFE()">UUID</button>-->
                 <button type="button" class="btn btn-default" ng-if="userRole === 8 && developerCheck()" ng-click="checkError()">Check errors</button>
                 <button type="button" class="btn btn-default" ng-if="userRole === 8 && developerCheck()" ng-click="saveAllGenes()"><span ng-show="!!!status.saveAllGenes"><i class="fa fa-spinner fa-spin"></i></span><span ng-show="!!status.saveAllGenes">Save All Genes</span></button>
@@ -59,20 +59,12 @@
                         <i ng-if="!gene.editable" class="fa fa-eye" ng-click="redirect('/gene/' + gene.title)"><span style="display:none">0</span></i>
                     </td>
                     <td ng-if="userRole === 8">{{!metaFlags[gene.title].review ? 'No' : 'Yes'}}</td>
-                    <td ng-if="userRole === 8">{{!metaFlags[gene.title].CurationQueueArticles ? 0 : metaFlags[gene.title].CurationQueueArticles}}</td>
+                    <td ng-if="userRole === 8">{{!metaFlags[gene.title].queues ? 0 : metaFlags[gene.title].queues}}</td>
                 </tr>
             </tbody>
         </table>
     </div>
     <div ng-if="userRole === 8">
         <loading ng-model="status.rendering" content="Please wait, we are loading genes information."></loading>
-        <div style="margin-bottom:50px">
-            <hr/>
-            <curation-queue ng-if="!status.queueRendering" location="'genes'" queue="queue" hugo-symbols="geneNames" docs="documents" meta-flags="metaFlags"></curation-queue>
-            <div ng-if="!status.rendering && status.queueRendering" style="margin-left:40%">
-                <span>Loading Curation Queue </span>
-                <img src="images/ajax-loader.gif"/>
-            </div>
-        </div>
     </div>
 </div>

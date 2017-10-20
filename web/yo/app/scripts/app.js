@@ -568,6 +568,11 @@ var oncokbApp = angular.module('oncokbApp', [
                 access: access.admin,
                 internalUse: true
             })
+            .when('/queues', {
+                templateUrl: 'views/queues.html',
+                access: access.admin,
+                internalUse: true
+            })
             // .when('/vus', {
             //    templateUrl: 'views/vus.html',
             //    controller: 'VUSCtrl',
