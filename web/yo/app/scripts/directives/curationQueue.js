@@ -10,16 +10,16 @@
  * # curationQueue
  */
 angular.module('oncokbApp')
-    .directive('curationQueue', function(DTColumnDefBuilder, DTOptionsBuilder, DatabaseConnector, $rootScope, $timeout, users, mainUtils, dialogs, _, storage, $q) {
+    .directive('curationQueue', function(DTColumnDefBuilder, DTOptionsBuilder, DatabaseConnector, $rootScope, $timeout, users, mainUtils, dialogs, _, storage, $q, documents) {
         return {
             templateUrl: 'views/curationQueue.html',
             restrict: 'E',
             scope: {
                 location: '=',
-                queue: '=?', // the '?' makes it optional to assign value, otherwise it will throw Non_assignable expression
-                docs: '=',
-                metaFlags: '=',
-                hugoSymbols: '=',
+                // queue: '=?', // the '?' makes it optional to assign value, otherwise it will throw Non_assignable expression
+                // docs: '=',
+                // metaFlags: '=',
+                // hugoSymbols: '=',
                 specifyAnnotationInGene: '&specifyAnnotation'
             },
             replace: true,
