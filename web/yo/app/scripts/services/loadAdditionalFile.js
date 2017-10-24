@@ -11,7 +11,8 @@
  * Service in the oncokb.
  */
 angular.module('oncokbApp')
-    .service('loadAdditionalFile', function loadFile($route, $location, $q, storage, documents) {
+    .service('loadAdditionalFile', function loadAdditionalFile($rootScope, storage, mainUtils, documents) {
+        var deferred = $q.defer();
         storage.retrieveAdditional().then(function(result) {
             if (result && (result.error || !_.isArray(result) || result.length === 0)) {
                 dialogs.error('Error', 'Fail to retrieve meta file! Please stop editing and contact the developer!');
@@ -24,9 +25,10 @@ angular.module('oncokbApp')
                     content = 'System error is ' + JSON.stringify(result.error);
                 }
                 MainUtils.sendEmail(sendTo, subject, content);
+                deferred.error(result);
             } else {
-                Documents.setAdditionalDocs(result);
-                var meta = Documents.getAdditionalDoc('meta');
+                documents.setAdditionalDocs(result);
+                var meta = documents.getAdditionalDoc('meta');
                 storage.getMetaRealtimeDocument(meta.id).then(function(metaRealtime) {
                     if (metaRealtime && metaRealtime.error) {
                         dialogs.error('Error', 'Fail to get meta document! Please stop editing and contact the developer!');
@@ -34,12 +36,10 @@ angular.module('oncokbApp')
                         $rootScope.metaRealtime = metaRealtime;
                         $rootScope.metaModel = metaRealtime.getModel();
                         $rootScope.metaData = metaRealtime.getModel().getRoot().get('review');
-                        processMeta();
+                        deferred.resolve(result);
                     }
                 });
             }
         });
-        return {
-
-        }
+        return deferred.promise;
     });
