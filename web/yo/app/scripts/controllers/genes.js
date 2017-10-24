@@ -174,7 +174,7 @@ angular.module('oncokbApp')
                                 Documents.set(result);
                                 Documents.setStatus(OncoKB.global.genes);
                                 if (users.getMe().role === 8) {
-                                    storage.retrieveMeta().then(function(result) {
+                                    storage.retrieveAdditional().then(function(result) {
                                         if (result && (result.error || !_.isArray(result) || result.length === 0)) {
                                             dialogs.error('Error', 'Fail to retrieve meta file! Please stop editing and contact the developer!');
                                             var sendTo = 'dev.oncokb@gmail.com';
