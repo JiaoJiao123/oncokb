@@ -115,7 +115,7 @@ angular.module('oncokbApp')
                     self.queuesDoc = document;
                     break;
                 case 'Meta Status':
-                    self.metaDoc = document;
+                    self.metaDoc = document;getAdditionalDoc
                     break;
                 }
             }

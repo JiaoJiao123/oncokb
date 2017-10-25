@@ -4,11 +4,11 @@ angular.module('oncokbApp')
     .controller('GenesCtrl', ['$scope', '$rootScope', '$location', '$timeout',
         '$routeParams', '_', 'config', 'importer', 'storage', 'documents',
         'users', 'DTColumnDefBuilder', 'DTOptionsBuilder', 'DatabaseConnector',
-        'OncoKB', 'stringUtils', 'S', 'mainUtils', 'gapi', 'UUIDjs', 'dialogs',
+        'OncoKB', 'stringUtils', 'S', 'mainUtils', 'gapi', 'UUIDjs', 'dialogs', 'loadAdditionalFile',
         function($scope, $rootScope, $location, $timeout, $routeParams, _,
                  config, importer, storage, Documents, users,
                  DTColumnDefBuilder, DTOptionsBuilder, DatabaseConnector,
-                 OncoKB, stringUtils, S, MainUtils, gapi, UUIDjs, dialogs) {
+                 OncoKB, stringUtils, S, MainUtils, gapi, UUIDjs, dialogs, loadAdditionalFile) {
             function saveGene(docs, docIndex, excludeObsolete, callback) {
                 if (docIndex < docs.length) {
                     var fileId = docs[docIndex].id;
@@ -174,32 +174,8 @@ angular.module('oncokbApp')
                                 Documents.set(result);
                                 Documents.setStatus(OncoKB.global.genes);
                                 if (users.getMe().role === 8) {
-                                    storage.retrieveAdditional().then(function(result) {
-                                        if (result && (result.error || !_.isArray(result) || result.length === 0)) {
-                                            dialogs.error('Error', 'Fail to retrieve meta file! Please stop editing and contact the developer!');
-                                            var sendTo = 'dev.oncokb@gmail.com';
-                                            var subject = 'Fail to retrieve meta file';
-                                            var content;
-                                            if (_.isArray(result) && result.length === 0) {
-                                                content = 'There is no meta file inside the Meta folder';
-                                            } else {
-                                                content = 'System error is ' + JSON.stringify(result.error);
-                                            }
-                                            MainUtils.sendEmail(sendTo, subject, content);
-                                        } else {
-                                            Documents.setAdditionalDocs(result);
-                                            var meta = Documents.getAdditionalDoc('meta');
-                                            storage.getMetaRealtimeDocument(meta.id).then(function(metaRealtime) {
-                                                if (metaRealtime && metaRealtime.error) {
-                                                    dialogs.error('Error', 'Fail to get meta document! Please stop editing and contact the developer!');
-                                                } else {
-                                                    $rootScope.metaRealtime = metaRealtime;
-                                                    $rootScope.metaModel = metaRealtime.getModel();
-                                                    $rootScope.metaData = metaRealtime.getModel().getRoot().get('review');
-                                                    processMeta();
-                                                }
-                                            });
-                                        }
+                                    loadAdditionalFile('all').then(function(result) {
+                                        processMeta();
                                     });
                                 } else {
                                     $scope.documents = Documents.get();
@@ -228,28 +204,27 @@ angular.module('oncokbApp')
                     if (flag) {
                         $scope.metaFlags[genes[i]].review = false;
                     }
-                    if (geneMetaData && geneMetaData.get('CurationQueueArticles') > 0) {
-                        $scope.metaFlags[genes[i]].CurationQueueArticles = geneMetaData.get('CurationQueueArticles');
-                    } else {
-                        $scope.metaFlags[genes[i]].CurationQueueArticles = 0;
+                }
+                var genesInQueues = $rootScope.queuesData.keys();
+                for (var i = 0; i < genesInQueues.length; i++) {
+                    var tempCount = 0;
+                    for (var j = 0; j < $rootScope.queuesData.get(genesInQueues[i]).length; j++) {
+                        if ($rootScope.queuesData.get(genesInQueues[i]).get(j).curated !== true) {
+                            tempCount++;
+                        }
                     }
-                    if (geneMetaData && geneMetaData.get('AllArticles') > 0) {
-                        genesWithArticle.push(genes[i]);
+                    if (tempCount >0) {
+                        if ($scope.metaFlags[genesInQueues[i]]) {
+                            $scope.metaFlags[genesInQueues[i]].queues = tempCount;
+                        } else {
+                            $scope.metaFlags[genesInQueues[i]] = {
+                                queues: tempCount
+                            };
+                        }
                     }
                 }
                 $scope.documents = Documents.get();
                 $scope.status.rendering = false;
-                var geneNames = [];
-                for (var i = 0; i < $scope.documents.length; i++) {
-                    geneNames.push($scope.documents[i].title);
-                }
-                $scope.geneNames = geneNames;
-                if (genesWithArticle.length > 0) {
-                    searchCuration(genesWithArticle, 0);
-                } else {
-                    $scope.status.queueRendering = false;
-                    $scope.queue = [];
-                }
             }
             var curationResults = [];
             function searchCuration(genesForCuration, index) {

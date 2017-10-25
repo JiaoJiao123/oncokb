@@ -59,7 +59,7 @@
                         <i ng-if="!gene.editable" class="fa fa-eye" ng-click="redirect('/gene/' + gene.title)"><span style="display:none">0</span></i>
                     </td>
                     <td ng-if="userRole === 8">{{!metaFlags[gene.title].review ? 'No' : 'Yes'}}</td>
-                    <td ng-if="userRole === 8">{{!metaFlags[gene.title].CurationQueueArticles ? 0 : metaFlags[gene.title].CurationQueueArticles}}</td>
+                    <td ng-if="userRole === 8">{{!metaFlags[gene.title].queues ? 0 : metaFlags[gene.title].queues}}</td>
                 </tr>
             </tbody>
         </table>
