@@ -11,8 +11,8 @@
  * Service in the oncokb.
  */
 angular.module('oncokbApp')
-    .service('loadAdditionalFile', function loadAdditionalFile($rootScope, $q, storage, mainUtils, documents, dialogs) {
-        return function(type) {
+    .service('additionalFile', function additionalFile($rootScope, $q, storage, mainUtils, documents, dialogs) {
+        function load(type) {
             function loadMeta() {
                 var metaDefer = $q.defer();
                 var meta = documents.getAdditionalDoc('meta');
@@ -27,7 +27,7 @@ angular.module('oncokbApp')
                         metaDefer.resolve('success');
                     }
                 });
-                return metaDefer;
+                return metaDefer.promise;
             }
 
             function loadQueues() {
@@ -44,7 +44,7 @@ angular.module('oncokbApp')
                         queuesDefer.resolve('success');
                     }
                 });
-                return queuesDefer;
+                return queuesDefer.promise;
             }
             var deferred = $q.defer();
             storage.retrieveAdditional().then(function(result) {
@@ -62,10 +62,10 @@ angular.module('oncokbApp')
                     documents.setAdditionalDocs(result);
                     var apiCalls = [];
                     if (type === 'all' || type === 'meta') {
-                        apiCalls.push(loadMeta);
+                        apiCalls.push(loadMeta());
                     }
                     if (type === 'all' || type === 'queues') {
-                        apiCalls.push(loadQueues);
+                        apiCalls.push(loadQueues());
                     }
                     if (apiCalls.length > 0) {
                         $q.all(apiCalls)
@@ -81,5 +81,8 @@ angular.module('oncokbApp')
                 }
             });
             return deferred.promise;
+        }
+        return {
+            load: load
         }
     });

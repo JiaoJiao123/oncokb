@@ -4,11 +4,11 @@ angular.module('oncokbApp')
     .controller('GenesCtrl', ['$scope', '$rootScope', '$location', '$timeout',
         '$routeParams', '_', 'config', 'importer', 'storage', 'documents',
         'users', 'DTColumnDefBuilder', 'DTOptionsBuilder', 'DatabaseConnector',
-        'OncoKB', 'stringUtils', 'S', 'mainUtils', 'gapi', 'UUIDjs', 'dialogs', 'loadAdditionalFile',
+        'OncoKB', 'stringUtils', 'S', 'mainUtils', 'gapi', 'UUIDjs', 'dialogs', 'additionalFile',
         function($scope, $rootScope, $location, $timeout, $routeParams, _,
                  config, importer, storage, Documents, users,
                  DTColumnDefBuilder, DTOptionsBuilder, DatabaseConnector,
-                 OncoKB, stringUtils, S, MainUtils, gapi, UUIDjs, dialogs, loadAdditionalFile) {
+                 OncoKB, stringUtils, S, MainUtils, gapi, UUIDjs, dialogs, additionalFile) {
             function saveGene(docs, docIndex, excludeObsolete, callback) {
                 if (docIndex < docs.length) {
                     var fileId = docs[docIndex].id;
@@ -174,7 +174,7 @@ angular.module('oncokbApp')
                                 Documents.set(result);
                                 Documents.setStatus(OncoKB.global.genes);
                                 if (users.getMe().role === 8) {
-                                    loadAdditionalFile('all').then(function(result) {
+                                    additionalFile.load('all').then(function(result) {
                                         processMeta();
                                     });
                                 } else {
@@ -188,21 +188,21 @@ angular.module('oncokbApp')
             };
             var genesWithArticle = [];
             function processMeta() {
-                var genes = $rootScope.metaData.keys();
-                for (var i = 0; i < genes.length; i++) {
-                    $scope.metaFlags[genes[i]] = {};
-                    var geneMetaData = $rootScope.metaData.get(genes[i]);
+                var genesToReview = $rootScope.metaData.keys();
+                for (var i = 0; i < genesToReview.length; i++) {
+                    $scope.metaFlags[genesToReview[i]] = {};
+                    var geneMetaData = $rootScope.metaData.get(genesToReview[i]);
                     var uuids = geneMetaData.keys();
                     var flag = true;
                     for (var j = 0; j < uuids.length; j++) {
                         if (geneMetaData.get(uuids[j]).type === 'Map' && geneMetaData.get(uuids[j]).get('review')) {
-                            $scope.metaFlags[genes[i]].review = true;
+                            $scope.metaFlags[genesToReview[i]].review = true;
                             flag = false;
                             break;
                         }
                     }
                     if (flag) {
-                        $scope.metaFlags[genes[i]].review = false;
+                        $scope.metaFlags[genesToReview[i]].review = false;
                     }
                 }
                 var genesInQueues = $rootScope.queuesData.keys();
@@ -226,65 +226,6 @@ angular.module('oncokbApp')
                 $scope.documents = Documents.get();
                 $scope.status.rendering = false;
             }
-            var curationResults = [];
-            function searchCuration(genesForCuration, index) {
-                var documents = Documents.get({title: genesForCuration[index]});
-                var document = _.isArray(documents) && documents.length === 1 ? documents[0] : null;
-                if (document) {
-                    storage.getRealtimeDocument(document.id).then(function(realtime) {
-                        if (realtime && realtime.error) {
-                            dialogs.error('Error', 'Fail to load ' + genesForCuration[index] + ' document. Please contact the developer.');
-                        } else {
-                            var model = realtime.getModel();
-                            var queueModel = model.getRoot().get('queue');
-                            if (queueModel) {
-                                _.each(queueModel.asArray(), function(item) {
-                                    if (item.get('curator') && MainUtils.isExpiredCuration(item.get('dueDay')) && !item.get('notified')) {
-                                        item.set('notified', new Date().getTime());
-                                    }
-                                    curationResults.push({
-                                        hugoSymbol: genesForCuration[index],
-                                        article: item.get('article'),
-                                        pmid: item.get('pmid'),
-                                        pmidString: 'PMID: ' + item.get('pmid'),
-                                        link: item.get('link'),
-                                        variant: item.get('variant'),
-                                        mainType: item.get('mainType'),
-                                        subType: item.get('subType'),
-                                        section: item.get('section'),
-                                        addedBy: item.get('addedBy'),
-                                        addedAt: item.get('addedAt'),
-                                        curated: item.get('curated'),
-                                        curator: item.get('curator'),
-                                        dueDay: item.get('dueDay'),
-                                        comment: item.get('comment'),
-                                        notified: item.get('notified')
-                                    });
-                                });
-                            }
-                            if (index === genesForCuration.length - 1) {
-                                $scope.queue = curationResults;
-                                $scope.status.queueRendering = false;
-                            } else {
-                                $timeout(function() {
-                                    index++;
-                                    searchCuration(genesForCuration, index);
-                                }, 200);
-                            }
-                        }
-                    });
-                } else {
-                    if (index === genesForCuration.length - 1) {
-                        $scope.queue = curationResults;
-                        $scope.status.queueRendering = false;
-                    } else {
-                        $timeout(function() {
-                            index++;
-                            searchCuration(genesForCuration, index);
-                        }, 200);
-                    }
-                }
-            };
             var dueDay = angular.element(document.querySelector('#genesdatepicker'));
             dueDay.datepicker();
             $scope.backup = function(backupFolderName) {
