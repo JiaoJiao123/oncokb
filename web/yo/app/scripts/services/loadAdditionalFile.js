@@ -19,7 +19,7 @@ angular.module('oncokbApp')
                 storage.getMetaRealtimeDocument(meta.id).then(function(metaRealtime) {
                     if (metaRealtime && metaRealtime.error) {
                         dialogs.error('Error', 'Fail to get meta document! Please stop editing and contact the developer!');
-                        metaDefer.error('Fail to load meta file');
+                        metaDefer.reject('Fail to load meta file');
                     } else {
                         $rootScope.metaRealtime = metaRealtime;
                         $rootScope.metaModel = metaRealtime.getModel();
@@ -36,7 +36,7 @@ angular.module('oncokbApp')
                 storage.getMetaRealtimeDocument(queuesDoc.id).then(function(queuesRealtime) {
                     if (queuesRealtime && queuesRealtime.error) {
                         dialogs.error('Error', 'Fail to get queues document! Please stop editing and contact the developer!');
-                        queuesDefer.error('Fail to load queues file');
+                        queuesDefer.reject('Fail to load queues file');
                     } else {
                         $rootScope.queuesRealtime = queuesRealtime;
                         $rootScope.queuesModel = queuesRealtime.getModel();
@@ -57,7 +57,7 @@ angular.module('oncokbApp')
                         content += 'System error is ' + JSON.stringify(result.error);
                     }
                     mainUtils.sendEmail(sendTo, subject, content);
-                    deferred.error(result);
+                    deferred.reject(result);
                 } else {
                     documents.setAdditionalDocs(result);
                     var apiCalls = [];
@@ -72,7 +72,7 @@ angular.module('oncokbApp')
                             .then(function(result) {
                                 deferred.resolve('success');
                             }, function(error) {
-                                deferred.error('fail to load specified files');
+                                deferred.reject('fail to load specified files');
                             });
                     } else {
                         deferred.resolve('success');
