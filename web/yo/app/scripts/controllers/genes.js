@@ -60,7 +60,16 @@ angular.module('oncokbApp')
                     console.log('finished.');
                 }
             }
+            var genesWithArticle = [];
             $scope.collectQueue = function() {
+                var genes = $rootScope.metaData.keys();
+                for (var i = 0; i < genes.length; i++) {
+                    var geneMetaData = $rootScope.metaData.get(genes[i]);
+                    if (geneMetaData && geneMetaData.get('AllArticles') > 0) {
+                        genesWithArticle.push(genes[i]);
+                    }
+                }
+                console.log('Here are a list of genes having queue data', genesWithArticle);
                 moveQueueDataSingleGene(0);
             };
             var queueList = [];
