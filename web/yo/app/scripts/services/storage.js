@@ -459,6 +459,7 @@ angular.module('oncokbApp')
                     } else {
                         console.log(error, id);
                         $rootScope.$emit('realtimeDoc.other_error');
+                        deferred.reject(error);
                     }
                     if (sendEmail) {
                         if (error.isFatal && self.document) {
