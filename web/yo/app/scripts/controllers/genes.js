@@ -22,6 +22,7 @@ angular.module('oncokbApp')
                 case 'mutation':
                     printoutContent(originalType, 'oncogenic', obj);
                     _.each(obj.tumors.asArray(), function(tumor) {
+                        currentTumor = MainUtils.getCancerTypesName(tumor.cancerTypes);
                         printoutContent(originalType, 'tumor', tumor);
                     });
                     break;
@@ -35,6 +36,7 @@ angular.module('oncokbApp')
                     printoutContent(originalType, 'nccn', obj);
                     printoutContent(originalType, 'trials', obj);
                     _.each(obj.TI.asArray(), function(ti) {
+                        currentTI = ti.name.text;
                         printoutContent(originalType, 'ti', ti);
                     });
                     break;
@@ -61,12 +63,12 @@ angular.module('oncokbApp')
                     if (obj.indication.text) {
                         result.push('Treatment indication: ' + obj.indication.text);
                     }
-                    if (result.length > 4) {
+                    if (result.length > 5) {
                         console.log(result.join('$'));
                     }
                     break;
                 case 'oncogenic':
-                    var result = [currenthugoSymbol, originalType, currentMutation, obj.oncogenic.text, obj.effect.value.text, obj.description.text];
+                    var result = [currenthugoSymbol, originalType, currentMutation];
                     if (obj.oncogenic.text) {
                         result.push('Oncogenic: ' + obj.oncogenic.text);
                     }
@@ -79,7 +81,7 @@ angular.module('oncokbApp')
                     if (obj.short.text) {
                         result.push('Additional: ' + obj.short.text);
                     }
-                    if (result.length > 4) {
+                    if (result.length > 3) {
                         console.log(result.join('$'));
                     }
                     break;
@@ -91,22 +93,22 @@ angular.module('oncokbApp')
                     if (obj.shortPrevalence.text) {
                         result.push('Prevalence Additional: ' + obj.shortPrevalence.text);
                     }
-                    if (result.length > 2) {
+                    if (result.length > 4) {
                         console.log(result.join('$'));
                     }
                     break;
                 case 'prognostic':
                     var result = [currenthugoSymbol, originalType, currentMutation, currentTumor];
                     if (obj.prognostic.description.text) {
-                        result.push('Prognostic Description: ' + obj.prevalence.description.text);
+                        result.push('Prognostic Description: ' + obj.prognostic.description.text);
                     }
                     if (obj.prognostic.level.text) {
-                        result.push('Prognostic Level: ' + obj.prevalence.level.text);
+                        result.push('Prognostic Level: ' + obj.prognostic.level.text);
                     }
                     if (obj.prognostic.short.text) {
-                        result.push('Prognostic Additional: ' + obj.prevalence.short.text);
+                        result.push('Prognostic Additional: ' + obj.prognostic.short.text);
                     }
-                    if (result.length > 2) {
+                    if (result.length > 4) {
                         console.log(result.join('$'));
                     }
                     break;
@@ -127,17 +129,14 @@ angular.module('oncokbApp')
                     if (obj.nccn.short.text) {
                         result.push('NCCN Additional: ' + obj.nccn.short.text);
                     }
-                    if (result.length > 2) {
+                    if (result.length > 4) {
                         console.log(result.join('$'));
                     }
                     break;
                 case 'trials':
                     var result = [currenthugoSymbol, originalType, currentMutation, currentTumor];
                     if (obj.trials.length > 0) {
-                        var trials = [];
-                        _.each(obj.trials.asArray(), function(trial) {
-                            trials.push(trial.getText());
-                        });
+                        var trials = obj.trials.asArray();
                         result.push('Clinical Trials: ' + trials.join());
                         console.log(result.join('$'));
                     }
@@ -224,83 +223,102 @@ angular.module('oncokbApp')
                 case 'Trials':
                     var result = [currenthugoSymbol, type, currentMutation, currentTumor];
                     if (obj.trials.length > 0) {
-                        var trials = [];
-                        _.each(obj.trials.asArray(), function(trial) {
-                            trials.push(trial.getText());
-                        });
+                        var trials = obj.trials.asArray();
                         result.push('Clinical Trials: ' + trials.join());
                     }
                     console.log(result.join('$'));
+                    break;
+                case 'Treatment':
+                    var result = [currenthugoSymbol, type, currentMutation, currentTumor, currentTI];
+                    if (obj.name.text) {
+                        result.push('Treatment name: ' + obj.name.text);
+                    }
+                    if (obj.level.text) {
+                        result.push('Treatment level: ' + obj.level.text);
+                    }
+                    if (obj.description.text) {
+                        result.push('Treatment description: ' + obj.description.text);
+                    }
+                    if (obj.indication.text) {
+                        result.push('Treatment indication: ' + obj.indication.text);
+                    }
+                    console.log(result.join('$'));
+                    break;
                 }
             }
 
             function generateFromSingleGene(docIndex) {
                 if (docIndex < $scope.documents.length) {
-                    var fileId = $scope.documents[docIndex].id;
-                    storage.getRealtimeDocument(fileId).then(function(realtime) {
-                        if (realtime && realtime.error) {
-                            console.log('did not get realtime document.');
-                        } else {
-                            if (docIndex% 50 === 0) {
-                                console.log('*********************', docIndex);
-                            }
-                            var gene = realtime.getModel().getRoot().get('gene');
-                            if (gene) {
-                                _.each(gene.mutations.asArray(), function(mutation) {
-                                    currentMutation = mutation.name.text;
-                                    if (mutation.name_eStatus.get('obsolete') === 'true') {
-                                        printoutContent('Mutation', 'mutation', mutation);
-                                    } else {
-                                        if (mutation.shortSummary_eStatus && mutation.shortSummary_eStatus.get('obsolete') === 'true') {
-                                            singleContent('Oncogenic', mutation);
-                                        }
-                                        _.each(mutation.tumors.asArray(), function(tumor) {
-                                            currentTumor = MainUtils.getCancerTypesName(tumor.cancerTypes);
-                                            if (tumor.name_eStatus.get('obsolete') === 'true') {
-                                                printoutContent('Tumor', 'tumor', tumor);
-                                            } else {
-                                                if (tumor.nccn_eStatus && tumor.nccn_eStatus.get('obsolete') === 'true') {
-                                                    singleContent('NCCN', tumor);
-                                                }
-                                                if (tumor.prevalence_eStatus && tumor.prevalence_eStatus.get('obsolete') === 'true') {
-                                                    singleContent('Prevalence', tumor);
-                                                }
-                                                if (tumor.progImp_eStatus && tumor.progImp_eStatus.get('obsolete') === 'true') {
-                                                    singleContent('Prognostic', tumor);
-                                                }
-                                                if (tumor.trials_eStatus && tumor.trials_eStatus.get('obsolete') === 'true') {
-                                                    singleContent('Trials', tumor);
-                                                }
-                                                _.each(tumor.TI.asArray(), function(ti) {
-                                                    currentTI = ti.name.text;
-                                                    if (ti.name_eStatus && ti.name_eStatus.get('obsolete') === 'true') {
-                                                        printoutContent(ti.name.text, 'ti', ti);
-                                                    } else {
-                                                        _.each(ti.treatments.asArray(), function(treatment) {
-                                                            if (treatment.name_eStatus && treatment.name_eStatus.get('obsolete') === 'true') {
-                                                                singleContent('NCCN', tumor);
-                                                            }
-                                                        });
-                                                    }
-                                                });
-                                            }
-                                        });
-                                    }
-
-                                });
+                    if (['EGFR', 'SMARCA4', 'ZRSR2', 'PPP4R2'].indexOf($scope.documents[docIndex].title) !== -1) {
+                        var fileId = $scope.documents[docIndex].id;
+                        storage.getRealtimeDocument(fileId).then(function(realtime) {
+                            if (realtime && realtime.error) {
+                                console.log('did not get realtime document.');
                             } else {
-                                console.log('\t\tNo gene model.');
+                                if (docIndex% 50 === 0) {
+                                    console.log('*********************', docIndex);
+                                }
+                                var gene = realtime.getModel().getRoot().get('gene');
+                                if (gene) {
+                                    currenthugoSymbol = gene.name.text;
+                                    _.each(gene.mutations.asArray(), function(mutation) {
+                                        currentMutation = mutation.name.text;
+                                        if (mutation.name_eStatus.get('obsolete') === 'true') {
+                                            printoutContent('Mutation', 'mutation', mutation);
+                                        } else {
+                                            if (mutation.shortSummary_eStatus && mutation.shortSummary_eStatus.get('obsolete') === 'true') {
+                                                singleContent('Oncogenic', mutation);
+                                            }
+                                            _.each(mutation.tumors.asArray(), function(tumor) {
+                                                currentTumor = MainUtils.getCancerTypesName(tumor.cancerTypes);
+                                                if (tumor.name_eStatus.get('obsolete') === 'true') {
+                                                    printoutContent('Tumor', 'tumor', tumor);
+                                                } else {
+                                                    if (tumor.nccn_eStatus && tumor.nccn_eStatus.get('obsolete') === 'true') {
+                                                        singleContent('NCCN', tumor);
+                                                    }
+                                                    if (tumor.prevalence_eStatus && tumor.prevalence_eStatus.get('obsolete') === 'true') {
+                                                        singleContent('Prevalence', tumor);
+                                                    }
+                                                    if (tumor.prognostic_eStatus && tumor.prognostic_eStatus.get('obsolete') === 'true') {
+                                                        singleContent('Prognostic', tumor);
+                                                    }
+                                                    if (tumor.trials_eStatus && tumor.trials_eStatus.get('obsolete') === 'true') {
+                                                        singleContent('Trials', tumor);
+                                                    }
+                                                    _.each(tumor.TI.asArray(), function(ti) {
+                                                        currentTI = ti.name.text;
+                                                        if (ti.name_eStatus && ti.name_eStatus.get('obsolete') === 'true') {
+                                                            printoutContent(ti.name.text, 'ti', ti);
+                                                        } else {
+                                                            _.each(ti.treatments.asArray(), function(treatment) {
+                                                                if (treatment.name_eStatus && treatment.name_eStatus.get('obsolete') === 'true') {
+                                                                    singleContent('Treatment', treatment);
+                                                                }
+                                                            });
+                                                        }
+                                                    });
+                                                }
+                                            });
+                                        }
+
+                                    });
+                                } else {
+                                    console.log('\t\tNo gene model.');
+                                }
                             }
-                        }
-                        $timeout(function() {
-                            generateFromSingleGene(++docIndex);
-                        }, 2000, false);
-                    }, function(error) {
-                        console.log('500 Error while fetching ', $scope.documents[docIndex].title);
-                        $timeout(function() {
-                            generateFromSingleGene(++docIndex);
-                        }, 2000, false);
-                    });
+                            $timeout(function() {
+                                generateFromSingleGene(++docIndex);
+                            }, 2000, false);
+                        }, function(error) {
+                            console.log('500 Error while fetching ', $scope.documents[docIndex].title);
+                            $timeout(function() {
+                                generateFromSingleGene(++docIndex);
+                            }, 2000, false);
+                        });
+                    } else {
+                        generateFromSingleGene(++docIndex);
+                    }
                 } else {
                     console.log('finished.');
                 }
