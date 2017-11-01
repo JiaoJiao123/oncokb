@@ -46,6 +46,11 @@ angular.module('oncokbApp')
                                 generateFromSingleGene(++docIndex);
                             }, 2000, false);
                         }
+                    }, function(error) {
+                        console.log('Fail to load ', $scope.documents[docIndex].title, error);
+                        $timeout(function() {
+                            generateFromSingleGene(++docIndex);
+                        }, 2000, false);
                     });
                 } else {
                     console.log('finished.');

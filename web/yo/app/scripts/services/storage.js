@@ -454,12 +454,12 @@ angular.module('oncokbApp')
                         $rootScope.$emit('realtimeDoc.client_error');
                     } else if (error.type === gapi.drive.realtime.ErrorType.NOT_FOUND) {
                         console.log('error: realtimeDoc.not_found');
-                        deferred.reject(error);
                         $rootScope.$emit('realtimeDoc.not_found', id);
                     } else {
                         console.log(error, id);
                         $rootScope.$emit('realtimeDoc.other_error');
                     }
+                    deferred.reject(error);
                     if (sendEmail) {
                         if (error.isFatal && self.document) {
                             var gene = self.document.getModel().getRoot().get('gene');
