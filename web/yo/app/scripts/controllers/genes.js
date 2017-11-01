@@ -657,7 +657,99 @@ angular.module('oncokbApp')
                     callback();
                 }
             }
-
+            var genesWithArticle = [];
+            $scope.collectQueue = function() {
+                var genes = $rootScope.metaData.keys();
+                for (var i = 0; i < genes.length; i++) {
+                    var geneMetaData = $rootScope.metaData.get(genes[i]);
+                    if (geneMetaData && geneMetaData.get('AllArticles') > 0) {
+                        genesWithArticle.push(genes[i]);
+                    }
+                }
+                console.log('Here are a list of genes having queue data', genesWithArticle);
+                moveQueueDataSingleGene(0);
+            };
+            var queueList = [];
+            function moveQueueDataSingleGene(index) {
+                if (index < genesWithArticle.length) {
+                    var doc = Documents.get({title: genesWithArticle[index]})[0];
+                    if (doc) {
+                        var fileId = doc.id;
+                        storage.getRealtimeDocument(fileId).then(function(realtime) {
+                            if (realtime && realtime.error) {
+                                console.log('did not get realtime document.');
+                            } else {
+                                var queue = realtime.getModel().getRoot().get('queue');
+                                if (queue.length > 0) {
+                                    console.log(index, genesWithArticle[index]);
+                                    _.each(queue.asArray(), function(item) {
+                                        queueList.push({
+                                            gene: genesWithArticle[index],
+                                            link: item.get('link'),
+                                            variant: item.get('variant'),
+                                            mainType: item.get('mainType'),
+                                            subType: item.get('subType'),
+                                            section: item.get('section'),
+                                            curator: item.get('curator'),
+                                            curated: item.get('curated'),
+                                            addedBy: item.get('addedBy'),
+                                            addedAt: item.get('addedAt'),
+                                            dueDay: item.get('dueDay'),
+                                            comment: item.get('comment'),
+                                            notified: item.get('notified'),
+                                            article: item.get('article'),
+                                            pmid: item.get('pmid')
+                                        });
+                                    });
+                                }
+                                $timeout(function() {
+                                    moveQueueDataSingleGene(++index);
+                                }, 2000, false);
+                            }
+                        });
+                    } else {
+                        moveQueueDataSingleGene(++index);
+                    }
+                } else {
+                    console.log('Finished collecting...');
+                    console.log(queueList);
+                    $scope.relocateQueue();
+                }
+            }
+            $scope.relocateQueue = function() {
+                var queuesDoc = Documents.getAdditionalDoc('queues');
+                storage.getRealtimeDocument(queuesDoc.id).then(function(realtime) {
+                    if (realtime && realtime.error) {
+                        console.log('did not get realtime document.');
+                    } else {
+                        var queuesDocModel = realtime.getModel();
+                        var queuesModel = queuesDocModel.getRoot().get('queues');
+                        _.each(queueList, function(item) {
+                            var queueItem = queuesDocModel.createMap({
+                                link: item.link,
+                                variant: item.variant,
+                                mainType: item.mainType,
+                                subType: item.subType,
+                                section: item.section,
+                                curator: item.curator,
+                                curated: item.curated,
+                                addedBy: item.addedBy,
+                                addedAt: item.addedAt,
+                                dueDay: item.dueDay,
+                                comment: item.comment,
+                                notified: item.notified,
+                                article: item.article,
+                                pmid: item.pmid
+                            });
+                            if (!queuesModel.has(item.gene)) {
+                                queuesModel.set(item.gene, queuesDocModel.createList());
+                            }
+                            queuesModel.get(item.gene).push(queueItem);
+                        });
+                        console.log('Finished inserting');
+                    }
+                });
+            };
             function insertTreatment(levels, levelIndex, callback) {
                 if (levelIndex < levels.length) {
                     var record = levels[levelIndex];

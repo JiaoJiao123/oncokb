@@ -114,7 +114,7 @@ angular.module('oncokbApp')
                 case 'Queues':
                     self.queuesDoc = document;
                     break;
-                case 'Meta':
+                case 'Meta Status':
                     self.metaDoc = document;
                     break;
                 }

@@ -264,7 +264,7 @@ angular.module('oncokbApp')
                         var nextPageToken = resp.nextPageToken;
                         if (nextPageToken) {
                             request = gapi.client.drive.files.list({
-                                q: '"' + config.additionalsFolderId + '" in parents',
+                                q: '"' + config.metaFolderId + '" in parents',
                                 pageToken: nextPageToken
                             });
                             retrievePageOfFiles(request, result);
@@ -276,7 +276,7 @@ angular.module('oncokbApp')
 
                 gapi.client.load('drive', 'v2', function() {
                     var initialRequest = gapi.client.drive.files.list({
-                        q: '"' + config.additionalsFolderId + '" in parents'
+                        q: '"' + config.metaFolderId + '" in parents'
                     });
                     retrievePageOfFiles(initialRequest, []);
                 });
