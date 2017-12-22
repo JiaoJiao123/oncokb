@@ -204,6 +204,10 @@ public class AlterationBoImpl extends GenericBoImpl<Alteration, AlterationDao> i
         if (addTruncatingMutations) {
             VariantConsequence truncatingVariantConsequence = VariantConsequenceUtils.findVariantConsequenceByTerm("feature_truncation");
             alterations.addAll(findMutationsByConsequenceAndPosition(alteration.getGene(), truncatingVariantConsequence, alteration.getProteinStart(), alteration.getProteinEnd(), fullAlterations));
+            Alteration truncatingMutation = findAlteration(alteration.getGene(), alteration.getAlterationType(), "Truncating Mutations");
+            if (truncatingMutation != null) {
+                alterations.add(truncatingMutation);
+            }
         }
 
         if (addOncogenicMutations(alteration, alterations)) {
